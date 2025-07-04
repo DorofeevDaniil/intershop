@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: intershop
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: 12345678
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    parameters:
+      schemaName: public
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 9191
+  servlet:
+    context-path: /intershop
+  error:
+    include-message: always
+
+logging:
+  level:
+    root: INFO
+    org:springframework:
+      web: INFO
+
+
+
