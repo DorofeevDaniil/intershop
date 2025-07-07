@@ -10,9 +10,7 @@ import ru.custom.intershop.pagination.Paging;
 import ru.custom.intershop.service.ItemService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/main/items")
@@ -30,11 +28,19 @@ public class MainController {
         @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(name = "search", required = false) String search,
         @RequestParam(name = "sort", required = true, defaultValue = "NO") String sort,
-        Model model,
-        HttpSession session
+        Model model
     ) {
-        List<Item> itemsList = itemService.getAll();
-        Long totalElements = itemService.getTotalCount();
+        List<Item> itemsList;
+        Long totalElements;
+
+        if (search == null || search.isBlank()) {
+            itemsList = itemService.getPage(page, pageSize, sort);
+            totalElements = itemService.getTotalCount();
+        } else {
+            itemsList =  itemService.findBySearchParams(page, pageSize, sort, search);
+            model.addAttribute("search", search);
+            totalElements = itemService.getTotalSearchedElements(search);
+        }
 
         List<List<Item>> rows = new ArrayList<>();
         for (int i = 0; i < itemsList.size(); i += 3) {
@@ -42,6 +48,7 @@ public class MainController {
         }
 
         model.addAttribute("items", rows);
+        model.addAttribute("sort", sort);
         model.addAttribute("paging", new Paging(rows, page, pageSize, totalElements));
 
         return "main";
@@ -51,10 +58,13 @@ public class MainController {
     public String handleAddItem(
         @PathVariable("id") Long id,
         @RequestParam("action") String action,
+        @RequestHeader(value = "referer", required = false) final String referer,
         HttpSession session
     ) {
         itemService.changeAmount(id, action);
 
-        return "redirect:/main/items";
+        String basePath = session.getServletContext().getContextPath();
+
+        return "redirect:" + referer.substring(referer.indexOf(basePath) + basePath.length());
     }
 }

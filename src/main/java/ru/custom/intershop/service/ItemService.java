@@ -1,6 +1,7 @@
 package ru.custom.intershop.service;
 
-import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.repository.ItemRepository;
@@ -19,12 +20,54 @@ public class ItemService {
         itemRepository.save(item);
     }
 
-    public List<Item> getAll() {
-        return itemRepository.findAllByOrderByIdAsc();
+    public List<Item> getPage(Integer page, Integer pageSize, String sort) {
+        switch (sort) {
+            case "ALPHA" -> {
+                return itemRepository.findAll(
+                    PageRequest.of(
+                        page - 1, pageSize, Sort.by("title").ascending()
+                    )
+                ).stream().toList();
+            }
+            case "PRICE" -> {
+                return itemRepository.findAll(
+                    PageRequest.of(
+                        page - 1, pageSize, Sort.by("price").ascending()
+                    )
+                ).stream().toList();
+            }
+            default -> {
+                return itemRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, pageSize));
+            }
+        }
+    }
+
+    public List<Item> findBySearchParams(Integer page, Integer pageSize, String sort, String searchText) {
+        switch (sort) {
+            case "ALPHA" -> {
+               return  itemRepository.searchByText(
+                    searchText.toUpperCase(),
+                    PageRequest.of(page - 1, pageSize, Sort.by("title").ascending())
+                );
+            }
+            case "PRICE" -> {
+                return itemRepository.searchByText(
+                    searchText.toUpperCase(),
+                    PageRequest.of(page - 1, pageSize, Sort.by("price").ascending())
+                );
+            }
+            default -> {
+                return itemRepository.searchByText(searchText.toUpperCase(), PageRequest.of(page - 1, pageSize));
+            }
+        }
     }
 
     public Long getTotalCount() {
         return itemRepository.count();
+    }
+
+    public Long getTotalSearchedElements(String text) {
+        return itemRepository.getFilteredCount(text.toUpperCase());
     }
 
     public Item getItemById(Long id) {
@@ -48,9 +91,8 @@ public class ItemService {
                     updatetingItem.setCount(0);
                 }
             }
-            case "DELETE" -> {
-                updatetingItem.setCount(0);
-            }
+            case "DELETE" -> updatetingItem.setCount(0);
+
         }
         save(updatetingItem);
     }

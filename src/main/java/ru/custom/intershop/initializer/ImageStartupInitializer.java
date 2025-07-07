@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -61,12 +60,6 @@ public class ImageStartupInitializer {
                 item.setPrice(BigDecimal.valueOf(200 + (70000 - 200) * randomDouble.nextDouble()).setScale(2, RoundingMode.DOWN));
                 item.setCount(0);
 
-                itemService.save(item);
-            }
-        } else {
-            List<Item> items = itemService.getAll();
-            for (Item item : items) {
-                item.setCount(0);
                 itemService.save(item);
             }
         }
