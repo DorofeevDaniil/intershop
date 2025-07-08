@@ -6,5 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="scripts/001-init-item-schema.xml" relativeToChangelogFile="true"/>
+    <include file="scripts/002-init-orders-schema.xml" relativeToChangelogFile="true"/>
+    <include file="scripts/003-init-order-item-schema.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

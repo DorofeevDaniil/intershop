@@ -1,5 +1,6 @@
 package ru.custom.intershop.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ public class CartController {
 
 
     @GetMapping("/items")
-    public String handleShowItems(Model model) {
+    public String handleShowItems(HttpSession session, Model model) {
         Cart cart = cartService.getCart();
 
         model.addAttribute("items", cart.getItems());
         model.addAttribute("total", cart.getTotal());
         model.addAttribute("empty", cart.isEmpty());
+
+        session.setAttribute("cart", cart);
 
         return "cart";
     }

@@ -3,6 +3,7 @@ package ru.custom.intershop.model;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "item")
@@ -17,8 +18,9 @@ public class Item {
 //    @Transient
     private Integer count;
     private BigDecimal price;
-//    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<CartItem> cartItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "item")
+    private List<OrderItem> cartItems;
 
     public void setId(Long id) {
         this.id = id;
@@ -67,12 +69,4 @@ public class Item {
     public void setCount(Integer count) {
         this.count = count;
     }
-
-//    public List<CartItem> getCartItems() {
-//        return cartItems;
-//    }
-//
-//    public void setCartItems(List<CartItem> cartItems) {
-//        this.cartItems = cartItems;
-//    }
 }

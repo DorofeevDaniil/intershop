@@ -17,6 +17,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 50
 
 app:
   upload-dir: uploads/images/

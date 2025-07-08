@@ -121,4 +121,8 @@ public class ItemService {
 
         save(item);
     }
+
+    public void updateItems(List<Item> items) {
+        itemRepository.saveAll(items);
+    }
 }
