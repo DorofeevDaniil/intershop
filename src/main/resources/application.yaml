@@ -33,6 +33,12 @@ logging:
     root: INFO
     org:springframework:
       web: INFO
+  file:
+    name: logs/app.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 100MB
 
 
 

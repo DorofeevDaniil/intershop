@@ -1,5 +1,6 @@
 package ru.custom.intershop.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ItemService {
     @Value("${app.upload-dir}")
@@ -114,7 +116,7 @@ public class ItemService {
             Path fullPath = uploadDir.resolve(image.getOriginalFilename());
             image.transferTo(fullPath.toFile());
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            log.error("Failed to load image file", e.getMessage());
         }
 
         save(item);
