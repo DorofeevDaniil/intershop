@@ -1,15 +1,23 @@
 package ru.custom.intershop.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.repository.ItemRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
 public class ItemService {
+    @Value("${app.upload-dir}")
+    private String relativePath;
     private final ItemRepository itemRepository;
 
     public ItemService(ItemRepository itemRepository) {
@@ -95,5 +103,20 @@ public class ItemService {
 
         }
         save(updatetingItem);
+    }
+
+    public void addItem(Item item, MultipartFile image) {
+        Path uploadDir = Paths.get(relativePath).toAbsolutePath();
+
+        try {
+            Files.createDirectories(uploadDir);
+
+            Path fullPath = uploadDir.resolve(image.getOriginalFilename());
+            image.transferTo(fullPath.toFile());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        save(item);
     }
 }

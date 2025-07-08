@@ -18,6 +18,9 @@ spring:
       hibernate:
         format_sql: true
 
+app:
+  upload-dir: uploads/images/
+
 server:
   port: 9191
   servlet:

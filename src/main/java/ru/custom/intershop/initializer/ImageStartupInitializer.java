@@ -2,6 +2,7 @@ package ru.custom.intershop.initializer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -11,10 +12,14 @@ import ru.custom.intershop.service.ItemService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 
@@ -22,6 +27,9 @@ import java.util.Random;
 public class ImageStartupInitializer {
 
     private final ItemService itemService;
+
+    @Value("${app.upload-dir}")
+    private String relativePath;
 
     private Random randomDouble = new Random();
 
@@ -44,11 +52,11 @@ public class ImageStartupInitializer {
     }
 
     @EventListener(ContextRefreshedEvent.class)
-    public void populatePosts(ContextRefreshedEvent event) {
+    public void populatePosts(ContextRefreshedEvent event) throws IOException {
         if (itemService.getTotalCount() == 0 ) {
             for (Map.Entry<String, String> fileEntry : INIT_FILES.entrySet()) {
 
-                String targetImagePath = genImagePath(fileEntry.getKey());
+                String targetImagePath = saveImage(fileEntry.getKey());
 
                 String text = getFileText(fileEntry.getKey());
 
@@ -85,7 +93,29 @@ public class ImageStartupInitializer {
         return builder.toString();
     }
 
-    private String genImagePath(String imageFileName) {
-        return imageFileName + "-demo.jpg";
+    private String saveImage(String imageFileName) throws IOException {
+        String initImageFullName = imageFileName + "-demo.jpg";
+        Path uploadDir = Paths.get(relativePath).toAbsolutePath();
+
+        String resultImagePath = "";
+
+        try {
+            if (Files.notExists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path targetImagePath = uploadDir.resolve(initImageFullName);
+            resultImagePath = initImageFullName;
+
+            if (Files.notExists(targetImagePath)) {
+                try (InputStream in = new ClassPathResource("init_images/" + initImageFullName).getInputStream()) {
+                    Files.copy(in, targetImagePath);
+                }
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Failed to initialize image data. Got error: %s", e.getMessage()));
+        }
+
+        return resultImagePath;
     }
 }
