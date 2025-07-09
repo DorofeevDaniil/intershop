@@ -19,11 +19,17 @@
 
 ### Windows
 #### Запуск
-Выполнить команду `./build/libs/start.bat` (либо вручную открыть файл)
+Выполнить команду `./build/libs/start.bat start.bat <DB_HOST> <DB_PORT> <DB_NAME> <POSTGRES_USER> <POSTGRES_PASSWORD>`
 
 > [!WARNING]
-> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/intershop-0.0.1-SNAPSHOT.jar`,
-но остановка будет возможна только последовательным выполнением команд
+> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/intershop-0.0.1-SNAPSHOT.jar`, предварительно задав переменные среды
+> 1.  `$env:DB_HOST="<DB_HOST>"`
+> 2.  `$env:DB_PORT="<DB_PORT>"`
+> 3.  `$env:DB_NAME="<DB_NAME>"`
+> 4.  `$env:POSTGRES_USER="<POSTGRES_USER>"`
+> 5.  `$env:POSTGRES_PASSWORD="<POSTGRES_PASSWORD>"`
+> 
+> Однако остановка будет возможна только последовательным выполнением команд
 > 1. `jps -lv | findstr /i intershop`
 > 2. `taskkill /PID <PID> /f`
 
