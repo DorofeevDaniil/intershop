@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17.5-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  web:
+    build: .
+    ports:
+      - "9191:9191"
+    depends_on:
+      - db
+    volumes:
+      - ./uploads/images:/app/uploads/images
+    environment:
+      DB_NAME: postgres
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      DB_HOST: db
+      DB_PORT: 5432
+volumes:
+  db_data:

@@ -11,7 +11,6 @@
                 <not>
                     <tableExists tableName="orders" schemaName="${schemaName}"/>
                 </not>
-                <dbms type="postgresql"/>
             </and>
         </preConditions>
         <createTable tableName="orders" schemaName="${schemaName}">
