@@ -30,7 +30,7 @@ public class OrderItem {
         return item.getTitle();
     }
 
-    public String getImagePath() {
+    public String getImgPath() {
         return item.getImgPath();
     }
 }

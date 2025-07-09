@@ -31,6 +31,14 @@ public class OrderService {
         return id;
     }
 
+    public Order getOrderById(Long id) {
+        return orderRepository.getReferenceById(id);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
     private Order populateOrder(Cart cart) {
         Order order = new Order();
 
