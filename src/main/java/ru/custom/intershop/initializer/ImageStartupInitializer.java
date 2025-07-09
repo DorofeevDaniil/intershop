@@ -1,7 +1,6 @@
 package ru.custom.intershop.initializer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -23,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 
+@Slf4j
 @Component
 public class ImageStartupInitializer {
 
@@ -45,8 +45,6 @@ public class ImageStartupInitializer {
         "washing-machine", "Cтиральная машина Samsung WW11CG604CLBLP, 11 кг, с увеличенным объемом барабана, электронным управлением, инверторным мотором, обработкой паром, системой управления на базе ИИ, черная",
         "ya-remote-controller", "Умный пульт Яндекс с Алисой, черный"
     );
-    private static final Logger logger = LoggerFactory.getLogger(ImageStartupInitializer.class);
-
     public ImageStartupInitializer(ItemService itemService) {
         this.itemService = itemService;
     }
@@ -87,7 +85,7 @@ public class ImageStartupInitializer {
                 builder.append(line).append(System.lineSeparator());
             }
         } catch (IOException e) {
-            logger.error(String.format("Failed to read text file %s. Got error: %s", resultFileName, e.getMessage()));
+            log.error(String.format("Failed to read text file %s. Got error: %s", resultFileName, e.getMessage()));
         }
 
         return builder.toString();
@@ -113,7 +111,7 @@ public class ImageStartupInitializer {
                 }
             }
         } catch (Exception e) {
-            logger.error(String.format("Failed to initialize image data. Got error: %s", e.getMessage()));
+            log.error(String.format("Failed to initialize image data. Got error: %s", e.getMessage()));
         }
 
         return resultImagePath;
