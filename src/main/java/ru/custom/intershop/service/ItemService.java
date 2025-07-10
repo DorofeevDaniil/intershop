@@ -81,7 +81,7 @@ public class ItemService {
     }
 
     public Item getItemById(Long id) {
-        return itemRepository.getReferenceById(id);
+        return itemRepository.findById(id).orElseGet(Item::new);
     }
 
     public List<Item> getAllInCart() {

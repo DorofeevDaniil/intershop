@@ -1,11 +1,15 @@
 package ru.custom.intershop.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Data
 @Entity
+@NoArgsConstructor
 @Table(name = "item")
 public class Item {
     @Id
@@ -21,52 +25,4 @@ public class Item {
 
     @OneToMany(mappedBy = "item")
     private List<OrderItem> cartItems;
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String decription) {
-        this.description = decription;
-    }
-
-    public String getImgPath() {
-        return imgPath;
-    }
-
-    public void setImgPath(String imgPath) {
-        this.imgPath = imgPath;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Integer getCount() {
-        return count;
-    }
-
-    public void setCount(Integer count) {
-        this.count = count;
-    }
 }

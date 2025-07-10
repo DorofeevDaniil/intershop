@@ -32,7 +32,7 @@ public class OrderService {
     }
 
     public Order getOrderById(Long id) {
-        return orderRepository.getReferenceById(id);
+        return orderRepository.findById(id).orElseGet(Order::new);
     }
 
     public List<Order> getAllOrders() {
