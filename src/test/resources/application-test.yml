@@ -17,8 +17,11 @@ spring:
       schemaName: PUBLIC
 
 app:
-  upload-dir: uploads/images/
+  init:
+    enabled: false
 
 logging:
+  file:
+    name: null
   level:
     root: WARN

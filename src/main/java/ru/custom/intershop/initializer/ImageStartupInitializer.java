@@ -2,6 +2,7 @@ package ru.custom.intershop.initializer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +25,7 @@ import java.util.Random;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "app.init.enabled", havingValue = "true", matchIfMissing = true)
 public class ImageStartupInitializer {
 
     private final ItemService itemService;
@@ -71,7 +73,7 @@ public class ImageStartupInitializer {
         }
     }
 
-    private String getFileText(String textFileName) {
+    public String getFileText(String textFileName) {
         StringBuilder builder = new StringBuilder();
         String resultFileName = textFileName + "-demo.txt";
 
@@ -91,7 +93,7 @@ public class ImageStartupInitializer {
         return builder.toString();
     }
 
-    private String saveImage(String imageFileName) throws IOException {
+    public String saveImage(String imageFileName) throws IOException {
         String initImageFullName = imageFileName + "-demo.jpg";
         Path uploadDir = Paths.get(relativePath).toAbsolutePath();
 
