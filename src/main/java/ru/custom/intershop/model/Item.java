@@ -3,6 +3,7 @@ package ru.custom.intershop.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,6 +24,7 @@ public class Item {
     private Integer count;
     private BigDecimal price;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "item")
     private List<OrderItem> cartItems;
 }

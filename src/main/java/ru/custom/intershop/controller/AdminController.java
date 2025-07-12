@@ -29,7 +29,7 @@ public class AdminController {
     }
 
     @PostMapping("/add")
-    public String handleUpdatePost(
+    public String handleAddItem(
         @RequestParam("title") String title,
         @RequestParam("price") BigDecimal price,
         @RequestParam("description") String description,

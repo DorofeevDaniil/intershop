@@ -55,13 +55,17 @@ public class MainController {
     }
 
     @PostMapping("/{id}")
-    public String handleAddItem(
+    public String handleChangeAmount(
         @PathVariable("id") Long id,
         @RequestParam("action") String action,
         @RequestHeader(value = "referer", required = false) final String referer,
         HttpSession session
     ) {
         itemService.changeAmount(id, action);
+
+        if (referer == null) {
+            return "redirect:/main/items";
+        }
 
         String basePath = session.getServletContext().getContextPath();
 
