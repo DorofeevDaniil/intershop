@@ -6,10 +6,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.repository.ItemRepository;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,103 +28,92 @@ public class ItemService {
         this.itemRepository = itemRepository;
     }
 
-    public void save(Item item) {
-        itemRepository.save(item);
+    public Mono<Item> save(Item item) {
+        return itemRepository.save(item);
     }
 
-    public List<Item> getPage(Integer page, Integer pageSize, String sort) {
-        switch (sort) {
-            case "ALPHA" -> {
-                return itemRepository.findAll(
-                    PageRequest.of(
-                        page - 1, pageSize, Sort.by("title").ascending()
-                    )
-                ).stream().toList();
-            }
-            case "PRICE" -> {
-                return itemRepository.findAll(
-                    PageRequest.of(
-                        page - 1, pageSize, Sort.by("price").ascending()
-                    )
-                ).stream().toList();
-            }
-            default -> {
-                return itemRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, pageSize));
-            }
-        }
+    public Flux<Item> getPage(Integer page, Integer pageSize, String sort) {
+        return switch (sort.toUpperCase()) {
+            case "ALPHA" -> itemRepository.findAllByOrderByTitleAsc(PageRequest.of(page - 1, pageSize));
+            case "PRICE" -> itemRepository.findAllByOrderByPriceAsc(PageRequest.of(page - 1, pageSize));
+            default -> itemRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, pageSize));
+        };
     }
 
-    public List<Item> findBySearchParams(Integer page, Integer pageSize, String sort, String searchText) {
-        switch (sort) {
-            case "ALPHA" -> {
-               return  itemRepository.searchByText(
-                    searchText.toUpperCase(),
-                    PageRequest.of(page - 1, pageSize, Sort.by("title").ascending())
-                );
-            }
-            case "PRICE" -> {
-                return itemRepository.searchByText(
-                    searchText.toUpperCase(),
-                    PageRequest.of(page - 1, pageSize, Sort.by("price").ascending())
-                );
-            }
-            default -> {
-                return itemRepository.searchByText(searchText.toUpperCase(), PageRequest.of(page - 1, pageSize));
-            }
-        }
+    public Flux<Item> findBySearchParams(Integer page, Integer pageSize, String sort, String searchText) {
+        return switch (sort) {
+            case "ALPHA" -> itemRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                searchText.toUpperCase(),
+                searchText.toUpperCase(),
+                PageRequest.of(page - 1, pageSize, Sort.by("title").ascending())
+            );
+
+            case "PRICE" -> itemRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                searchText.toUpperCase(),
+                searchText.toUpperCase(),
+                PageRequest.of(page - 1, pageSize, Sort.by("price").ascending())
+            );
+
+            default -> itemRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                searchText.toUpperCase(),
+                searchText.toUpperCase(),
+                PageRequest.of(page - 1, pageSize)
+            );
+        };
     }
 
-    public Long getTotalCount() {
+    public Mono<Long> getTotalCount() {
         return itemRepository.count();
     }
 
-    public Long getTotalSearchedElements(String text) {
-        return itemRepository.getFilteredCount(text.toUpperCase());
+    public Mono<Long> getTotalSearchedElements(String text) {
+        return itemRepository.countByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text.toUpperCase(), text.toUpperCase());
     }
 
-    public Item getItemById(Long id) {
-        return itemRepository.findById(id).orElseGet(Item::new);
+    public Mono<Item> getItemById(Long id) {
+        return itemRepository.findById(id);
     }
 
-    public List<Item> getAllInCart() {
+    public Flux<Item> getAllInCart() {
         return itemRepository.findAllByCountGreaterThan(0);
     }
 
-    public void changeAmount(Long id, String action) {
-        Item updatetingItem = getItemById(id);
-        Integer currCount = updatetingItem.getCount();
+    public Mono<Item> changeAmount(Long id, String action) {
+        return getItemById(id)
+            .flatMap(item -> {
+                int count = item.getCount() != null ? item.getCount() : 0;
 
-        switch (action.toUpperCase()) {
-            case "PLUS" -> updatetingItem.setCount(currCount + 1);
-            case "MINUS" -> {
-                if (currCount > 1) {
-                    updatetingItem.setCount(currCount - 1);
-                } else {
-                    updatetingItem.setCount(0);
+                switch (action.toUpperCase()) {
+                    case "PLUS" -> item.setCount(count + 1);
+                    case "MINUS" -> item.setCount(Math.max(0, count - 1));
+                    case "DELETE" -> item.setCount(0);
+                    default -> {/*empty while have no default methods*/}
                 }
-            }
-            case "DELETE" -> updatetingItem.setCount(0);
 
-        }
-        save(updatetingItem);
+                return save(item);
+            });
     }
 
-    public void addItem(Item item, MultipartFile image) {
-        Path uploadDir = Paths.get(relativePath).toAbsolutePath();
+    public Mono<Item> addItem(Item item, MultipartFile image) {
+        return Mono.fromCallable(() -> {
+            Path uploadDir = Paths.get(relativePath).toAbsolutePath();
 
-        try {
             Files.createDirectories(uploadDir);
 
             Path fullPath = uploadDir.resolve(image.getOriginalFilename());
             image.transferTo(fullPath.toFile());
-        } catch (IOException e) {
-            log.error("Failed to load image file", e.getMessage());
-        }
 
-        save(item);
+            return item;
+        })
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(this::save)
+            .onErrorResume(e -> {
+                log.error("Ошибка при сохранении файла или Item", e);
+                return Mono.empty();
+            });
     }
 
-    public void updateItems(List<Item> items) {
-        itemRepository.saveAll(items);
+    public Flux<Item> updateItems(List<Item> items) {
+        return itemRepository.saveAll(items);
     }
 }

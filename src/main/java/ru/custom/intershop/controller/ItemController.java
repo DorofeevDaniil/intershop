@@ -3,7 +3,7 @@ package ru.custom.intershop.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.custom.intershop.model.Item;
+import reactor.core.publisher.Mono;
 import ru.custom.intershop.service.ItemService;
 
 @Controller
@@ -16,23 +16,23 @@ public class ItemController {
     }
 
     @GetMapping
-    public String handleShowItem(
+    public Mono<String> handleShowItem(
         @PathVariable("id") Long id,
         Model model
     ) {
-        Item item = itemService.getItemById(id);
-        model.addAttribute("item", item);
-
-        return "item";
+        return itemService.getItemById(id)
+            .map(item -> {
+                model.addAttribute("item", item);
+                return "item";
+            });
     }
 
     @PostMapping
-    public String handleChangeAmount(
+    public Mono<String> handleChangeAmount(
         @PathVariable("id") Long id,
         @RequestParam(name = "action", required = true) String action
     ) {
-        itemService.changeAmount(id, action);
-
-        return "redirect:/items/" + id;
+        return itemService.changeAmount(id, action)
+            .thenReturn( "redirect:/items/" + id);
     }
 }
