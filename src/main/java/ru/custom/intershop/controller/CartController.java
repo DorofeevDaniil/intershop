@@ -3,6 +3,7 @@ package ru.custom.intershop.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 import ru.custom.intershop.service.CartService;
@@ -36,9 +37,10 @@ public class CartController {
     @PostMapping("/items/{id}")
     public Mono<String> handleChangeAmount (
         @PathVariable("id") Long id,
-        @RequestParam(name = "action", required = true) String action
+        ServerWebExchange exchange
     ) {
-        return cartService.changeItemAmount(id, action)
-            .thenReturn("redirect:/cart/items");
+        return exchange.getFormData().flatMap(data ->
+            cartService.changeItemAmount(id, data.getFirst("action"))
+                .thenReturn("redirect:/cart/items"));
     }
 }

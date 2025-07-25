@@ -28,4 +28,3 @@ public class DataSourceConfig {
         return ds;
     }
 }
-//DB_HOST=localhost;DB_PORT=5432;DB_NAME=postgres;POSTGRES_USER=postgres;POSTGRES_PASSWORD=12345678
