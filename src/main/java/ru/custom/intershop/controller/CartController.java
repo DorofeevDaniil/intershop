@@ -1,11 +1,10 @@
 package ru.custom.intershop.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.custom.intershop.dto.CartDto;
-import ru.custom.intershop.model.Cart;
+import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 import ru.custom.intershop.service.CartService;
 import ru.custom.intershop.mapper.CartMapper;
 
@@ -20,26 +19,26 @@ public class CartController {
 
 
     @GetMapping("/items")
-    public String handleShowItems(HttpSession session, Model model) {
-        Cart cart = cartService.getCart();
-        CartDto cartDto = CartMapper.toCartDto(cart);
+    public Mono<String> handleShowItems(WebSession session, Model model) {
+        return cartService.getCart()
+            .flatMap(cart -> Mono.just(CartMapper.toCartDto(cart)))
+            .map(cartDto -> {
+                model.addAttribute("items", cartDto.getItems());
+                model.addAttribute("total", cartDto.getTotal());
+                model.addAttribute("empty", cartDto.isEmpty());
 
-        model.addAttribute("items", cartDto.getItems());
-        model.addAttribute("total", cartDto.getTotal());
-        model.addAttribute("empty", cartDto.isEmpty());
+                session.getAttributes().put("cart", cartDto);
 
-        session.setAttribute("cart", cartDto);
-
-        return "cart";
+                return "cart";
+            });
     }
 
     @PostMapping("/items/{id}")
-    public String handleChangeAmount (
+    public Mono<String> handleChangeAmount (
         @PathVariable("id") Long id,
         @RequestParam(name = "action", required = true) String action
     ) {
-        cartService.changeItemAmount(id, action);
-
-        return "redirect:/cart/items";
+        return cartService.changeItemAmount(id, action)
+            .thenReturn("redirect:/cart/items");
     }
 }
