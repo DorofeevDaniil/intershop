@@ -7,6 +7,9 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.service.ItemService;
 
@@ -52,25 +55,34 @@ public class ImageStartupInitializer {
     }
 
     @EventListener(ContextRefreshedEvent.class)
-    public void populatePosts(ContextRefreshedEvent event) throws IOException {
-        if (itemService.getTotalCount() == 0 ) {
-            for (Map.Entry<String, String> fileEntry : INIT_FILES.entrySet()) {
+    public void populateItems(ContextRefreshedEvent event) {
+        itemService.getTotalCount()
+            .filter(count -> count == 0)
+            .flatMapMany(empty -> Flux.fromIterable(INIT_FILES.entrySet()))
+            .flatMap(entry -> createAndSaveItem(entry.getKey(), entry.getValue()))
+            .doOnError(e -> log.error("Error during initialization", e))
+            .subscribe();
+    }
 
-                String targetImagePath = saveImage(fileEntry.getKey());
-
-                String text = getFileText(fileEntry.getKey());
+    private Mono<Item> createAndSaveItem(String fileKey, String title) {
+        return Mono.fromCallable(() -> saveImage(fileKey))
+            .subscribeOn(Schedulers.boundedElastic())
+            .zipWith(Mono.fromCallable(() -> getFileText(fileKey))
+                .subscribeOn(Schedulers.boundedElastic()))
+            .flatMap(tuple -> {
+                String imagePath = tuple.getT1();
+                String description = tuple.getT2();
 
                 Item item = new Item();
-
-                item.setTitle(fileEntry.getValue());
-                item.setDescription(text);
-                item.setImgPath(targetImagePath);
-                item.setPrice(BigDecimal.valueOf(200 + (70000 - 200) * randomDouble.nextDouble()).setScale(2, RoundingMode.DOWN));
+                item.setTitle(title);
+                item.setDescription(description);
+                item.setImgPath(imagePath);
+                item.setPrice(BigDecimal.valueOf(200 + (70000 - 200) * randomDouble.nextDouble())
+                    .setScale(2, RoundingMode.DOWN));
                 item.setCount(0);
 
-                itemService.save(item);
-            }
-        }
+                return itemService.save(item);
+            });
     }
 
     public String getFileText(String textFileName) {
