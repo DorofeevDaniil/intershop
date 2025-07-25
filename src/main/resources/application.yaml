@@ -1,24 +1,25 @@
 spring:
   application:
     name: intershop
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     parameters:
       schemaName: public
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          batch_size: 50
+
+  webflux:
+    base-path: /intershop
 
 app:
   upload-dir: uploads/images/
@@ -27,8 +28,6 @@ app:
 
 server:
   port: 9191
-  servlet:
-    context-path: /intershop
   error:
     include-message: always
 
@@ -36,6 +35,7 @@ logging:
   level:
     root: INFO
     org:springframework.web: INFO
+    org.springframework.r2dbc.core: DEBUG
   file:
     name: logs/app.log
   logback:
