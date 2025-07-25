@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.custom.intershop.model.Order;
+import reactor.core.publisher.Mono;
 import ru.custom.intershop.service.OrderService;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/orders")
@@ -22,25 +20,28 @@ public class OrderController {
      }
 
     @GetMapping
-    public String handleShowOrders(Model model) {
-        List<Order> orders = orderService.getAllOrders();
+    public Mono<String> handleShowOrders(Model model) {
+        return orderService.getAllOrders()
+            .collectList()
+            .map(orders -> {
+                model.addAttribute("orders", orders);
 
-        model.addAttribute("orders", orders);
-
-        return "orders";
+                return "orders";
+            });
     }
 
     @GetMapping("/{id}")
-    public String handleGetOrder(
+    public Mono<String> handleGetOrder(
         @PathVariable("id") Long id,
         @RequestParam(value = "newOrder", defaultValue = "false") Boolean newOrder,
         Model model
     ) {
-        Order order = orderService.getOrderById(id);
+        return orderService.getOrderById(id)
+            .map(order -> {
+                model.addAttribute("order", order);
+                model.addAttribute("newOrder", newOrder);
 
-        model.addAttribute("order", order);
-        model.addAttribute("newOrder", newOrder);
-
-        return "order";
+                return "order";
+            });
     }
 }
