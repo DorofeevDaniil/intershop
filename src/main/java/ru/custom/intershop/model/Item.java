@@ -1,30 +1,23 @@
 package ru.custom.intershop.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
-@Entity
 @NoArgsConstructor
 @Table(name = "item")
 public class Item {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private  String title;
     private String description;
-    @Column(name = "img_path", nullable = false)
+    @Column("img_path")
     private String imgPath;
-//    @Transient
     private Integer count;
     private BigDecimal price;
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "item")
-    private List<OrderItem> cartItems;
 }

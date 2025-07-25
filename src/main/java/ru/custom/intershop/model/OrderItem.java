@@ -1,36 +1,26 @@
 package ru.custom.intershop.model;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
 @Data
-@Entity
 @NoArgsConstructor
 @Table(name = "order_item")
 public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
-    private Order order;
+    @Column("order_id")
+    private Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "id")
-    private Item item;
+    @Column("item_id")
+    private Long itemId;
 
     private Integer count;
     private BigDecimal price;
-
-    public String getTitle() {
-        return item.getTitle();
-    }
-
-    public String getImgPath() {
-        return item.getImgPath();
-    }
 }
