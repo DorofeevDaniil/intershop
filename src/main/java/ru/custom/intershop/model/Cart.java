@@ -11,8 +11,4 @@ import java.util.List;
 public class Cart {
     private List<Item> items;
     private BigDecimal total;
-
-    public Boolean isEmpty() {
-        return items == null || items.isEmpty();
-    }
 }
