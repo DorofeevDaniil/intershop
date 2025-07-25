@@ -1,9 +1,10 @@
 package ru.custom.intershop.controller;
 
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.service.ItemService;
 
@@ -29,22 +30,29 @@ public class AdminController {
     }
 
     @PostMapping("/add")
-    public String handleAddItem(
-        @RequestParam("title") String title,
-        @RequestParam("price") BigDecimal price,
-        @RequestParam("description") String description,
-        @RequestParam("image") MultipartFile image) {
+    public Mono<String> handleAddItem(
+        @RequestPart("title") Mono<String> titleMono,
+        @RequestPart("price") Mono<String> priceMono,
+        @RequestPart("description") Mono<String> descriptionMono,
+        @RequestPart("image") Mono<FilePart> imageMono) {
 
-        Item item = new Item();
+        return Mono.zip(titleMono, priceMono, descriptionMono, imageMono)
+            .flatMap(tuple -> {
+                String title = tuple.getT1();
+                BigDecimal price = new BigDecimal(tuple.getT2());
+                String description = tuple.getT3();
+                FilePart image = tuple.getT4();
 
-        item.setTitle(title);
-        item.setPrice(price);
-        item.setDescription(description);
-        item.setImgPath(image.getOriginalFilename());
-        item.setCount(0);
+                Item item = new Item();
 
-        itemService.addItem(item, image);
+                item.setTitle(title);
+                item.setPrice(price);
+                item.setDescription(description);
+                item.setImgPath(image.filename());
+                item.setCount(0);
 
-        return "redirect:/admin/add";
+                return itemService.addItem(item, image);
+            })
+            .thenReturn("redirect:/admin/add");
     }
 }

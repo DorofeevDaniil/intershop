@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -94,18 +94,16 @@ public class ItemService {
             });
     }
 
-    public Mono<Item> addItem(Item item, MultipartFile image) {
+    public Mono<Item> addItem(Item item, FilePart image) {
+        Path uploadDir = Paths.get(relativePath).toAbsolutePath();
+        Path fullPath = uploadDir.resolve(image.filename());
+
         return Mono.fromCallable(() -> {
-            Path uploadDir = Paths.get(relativePath).toAbsolutePath();
-
-            Files.createDirectories(uploadDir);
-
-            Path fullPath = uploadDir.resolve(image.getOriginalFilename());
-            image.transferTo(fullPath.toFile());
-
-            return item;
-        })
+                Files.createDirectories(uploadDir);
+                return fullPath;
+            })
             .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(path -> image.transferTo(path).thenReturn(item))
             .flatMap(this::save)
             .onErrorResume(e -> {
                 log.error("Ошибка при сохранении файла или Item", e);
