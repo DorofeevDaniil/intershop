@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DefaultController {
     @GetMapping("/")
     public String handleMainRedirect(Model model) {
+        return "redirect:/main/items";
+    }
 
+    @GetMapping
+    public String handleMainRedirectFromEmpty(Model model) {
         return "redirect:/main/items";
     }
 }
