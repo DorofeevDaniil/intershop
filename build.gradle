@@ -30,12 +30,13 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.32'
 
 	runtimeOnly 'org.postgresql:r2dbc-postgresql:1.0.2.RELEASE'
-	runtimeOnly 'com.h2database:h2'
 
 	testImplementation 'org.jsoup:jsoup:1.17.2'
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testRuntimeOnly "io.r2dbc:r2dbc-h2"
 }
 
 tasks.named('test') {
