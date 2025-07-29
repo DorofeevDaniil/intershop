@@ -2,31 +2,33 @@ package ru.custom.intershop.unit.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.domain.*;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockReset;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.repository.ItemRepository;
 import ru.custom.intershop.service.ItemService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = ItemService.class)
-class ItemServiceTest {
+class ItemServiceTest extends BaseServiceTest {
     @MockitoBean(reset = MockReset.BEFORE)
     private ItemRepository itemRepository;
 
@@ -38,13 +40,7 @@ class ItemServiceTest {
 
     private static final String TEST_FILE_NAME = "test-image.jpg";
     private static final String TEST_FILE_CONTENT = "test file content";
-    private static final String TEST_FILE_CONTENT_TYPE = "image/jpeg";
 
-    private static final Long TEST_ID = 1L;
-    private static final String TEST_TITLE = "test title";
-    private static final String TEST_DESCRIPTION = "test description";
-    private static final BigDecimal TEST_PRICE = BigDecimal.valueOf(100);
-    private static final String TEST_IMG_PATH = "/test/path.png";
     private static final String TEST_SEARCH = "test";
 
     private static final Integer TEST_PAGE = 1;
@@ -60,130 +56,180 @@ class ItemServiceTest {
 
     @Test
     void save_shouldSaveItem() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        doReturn(expextedItem).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(expectedItem)).when(itemRepository).save(any(Item.class));
 
-        itemRepository.save(expextedItem);
+        StepVerifier.create(
+            itemService.save(expectedItem)
+        ).assertNext(returnedItem ->
+            assertEquals(expectedItem, returnedItem)
+        ).verifyComplete();
 
-        verify(itemRepository, times(1)).save(expextedItem);
+        verify(itemRepository, times(1)).save(expectedItem);
     }
 
     @Test
     void getPage_shouldReturnItemsPage_sortByTitle() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        Page<Item> page = new PageImpl<>(List.of(expextedItem));
+        List<Item> page = List.of(expectedItem);
 
-        doReturn(page).when(itemRepository).findAll(any(PageRequest.class));
+        doReturn(Flux.fromIterable(page)).when(itemRepository).findAllByOrderByTitleAsc(any(PageRequest.class));
 
-        List<Item> actualItems = itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_ALPHA);
+        StepVerifier.create(
+            itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_ALPHA)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
-            .findAll(PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE, Sort.by("title").ascending()));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
+            .findAllByOrderByTitleAsc(PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE));
     }
 
     @Test
     void getPage_shouldReturnItemsPage_sortByPrice() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        Page<Item> page = new PageImpl<>(List.of(expextedItem));
+        List<Item> page = List.of(expectedItem);
 
-        doReturn(page).when(itemRepository).findAll(any(PageRequest.class));
+        doReturn(Flux.fromIterable(page)).when(itemRepository).findAllByOrderByPriceAsc(any(PageRequest.class));
 
-        List<Item> actualItems = itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_PRICE);
+        StepVerifier.create(
+            itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_PRICE)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
-            .findAll(PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE, Sort.by("price").ascending()));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
+            .findAllByOrderByPriceAsc(PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE));
     }
 
     @Test
     void getPage_shouldReturnItemsPage_withoutSort() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        doReturn(List.of(expextedItem)).when(itemRepository).findAllByOrderByIdAsc(any(PageRequest.class));
+        List<Item> page = List.of(expectedItem);
 
-        List<Item> actualItems = itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_NO);
+        doReturn(Flux.fromIterable(page)).when(itemRepository).findAllByOrderByIdAsc(any(PageRequest.class));
+
+        StepVerifier.create(
+            itemService.getPage(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_NO)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
             .findAllByOrderByIdAsc(PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
     }
 
     @Test
     void findBySearchParams_shouldSearch_sortByTitle() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        doReturn(List.of(expextedItem)).when(itemRepository).searchByText(anyString(), any(PageRequest.class));
+        List<Item> page = List.of(expectedItem);
 
-        List<Item> actualItems = itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_ALPHA, TEST_SEARCH);
+        doReturn(Flux.fromIterable(page))
+            .when(itemRepository)
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                anyString(), anyString(), any(PageRequest.class));
+
+        StepVerifier.create(
+            itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_ALPHA, TEST_SEARCH)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
-            .searchByText(
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                TEST_SEARCH.toUpperCase(),
                 TEST_SEARCH.toUpperCase(),
                 PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE, Sort.by("title").ascending()));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
     }
 
     @Test
     void findBySearchParams_shouldSearch_sortByPrice() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        doReturn(List.of(expextedItem)).when(itemRepository).searchByText(anyString(), any(PageRequest.class));
+        List<Item> page = List.of(expectedItem);
 
-        List<Item> actualItems = itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_PRICE, TEST_SEARCH);
+        doReturn(Flux.fromIterable(page))
+            .when(itemRepository)
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                anyString(), anyString(), any(PageRequest.class));
+
+        StepVerifier.create(
+            itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_PRICE, TEST_SEARCH)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
-            .searchByText(
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                TEST_SEARCH.toUpperCase(),
                 TEST_SEARCH.toUpperCase(),
                 PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE, Sort.by("price").ascending()));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
     }
 
     @Test
     void findBySearchParams_shouldSearch_withoutSort() {
-        Item expextedItem = populateItem();
-        expextedItem.setId(TEST_ID);
+        Item expectedItem = populateItem();
+        expectedItem.setId(TEST_ID);
 
-        doReturn(List.of(expextedItem)).when(itemRepository).searchByText(anyString(), any(PageRequest.class));
+        List<Item> page = List.of(expectedItem);
 
-        List<Item> actualItems = itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_NO, TEST_SEARCH);
+        doReturn(Flux.fromIterable(page))
+            .when(itemRepository)
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                anyString(), anyString(), any(PageRequest.class));
+
+
+        StepVerifier.create(
+            itemService.findBySearchParams(TEST_PAGE, TEST_PAGE_SIZE, TEST_SORT_NO, TEST_SEARCH)
+        ).assertNext(actualItem ->
+            assertEquals(expectedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1))
-            .searchByText(
+            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                TEST_SEARCH.toUpperCase(),
                 TEST_SEARCH.toUpperCase(),
                 PageRequest.of(TEST_PAGE - 1, TEST_PAGE_SIZE));
-        assertEquals(1, actualItems.size());
-        assertTrue(actualItems.contains(expextedItem));
     }
 
     @Test
     void getTotalSearchedElements_shouldReturnCountOfElementsByFilter() {
-        doReturn(1L).when(itemRepository).getFilteredCount(anyString());
+        doReturn(Mono.just(1L))
+            .when(itemRepository)
+            .countByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                anyString(), anyString());
 
-        itemService.getTotalSearchedElements(TEST_SEARCH);
+        StepVerifier.create(
+            itemService.getTotalSearchedElements(TEST_SEARCH)
+        ).assertNext(count ->
+            assertEquals(1L, count)
+        ).verifyComplete();
 
-        verify(itemRepository, times(1)).getFilteredCount(TEST_SEARCH.toUpperCase());
+        verify(itemRepository, times(1))
+            .countByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                TEST_SEARCH.toUpperCase(), TEST_SEARCH.toUpperCase());
     }
 
     @Test
     void getTotalCount_shouldReturnCount() {
-        doReturn(1L).when(itemRepository).count();
+        doReturn(Mono.just(1L)).when(itemRepository).count();
 
-        itemService.getTotalCount();
+        StepVerifier.create(
+            itemService.getTotalCount()
+        ).assertNext(count ->
+            assertEquals(1L, count)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).count();
     }
@@ -193,22 +239,28 @@ class ItemServiceTest {
         Item expextedItem = populateItem();
         expextedItem.setId(TEST_ID);
 
-        doReturn(Optional.of(expextedItem)).when(itemRepository).findById(anyLong());
+        doReturn(Mono.just(expextedItem)).when(itemRepository).findById(anyLong());
 
-        Item actualItem = itemService.getItemById(TEST_ID);
+        StepVerifier.create(
+            itemService.getItemById(TEST_ID)
+        ).assertNext(actualItem ->
+            assertEquals(expextedItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        assertEquals(expextedItem, actualItem);
     }
 
     @Test
     void getItemById_shouldReturnEmpty_whenNotFound() {
-        doReturn(Optional.empty()).when(itemRepository).findById(anyLong());
+        doReturn(Mono.empty()).when(itemRepository).findById(anyLong());
 
-        Item actualItem = itemService.getItemById(TEST_ID);
+        StepVerifier.create(
+            itemService.getItemById(TEST_ID)
+        ).assertNext(actualItem ->
+                assertEquals(new Item(), actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        assertEquals(new Item(), actualItem);
     }
 
     @Test
@@ -217,13 +269,17 @@ class ItemServiceTest {
         Item item = populateItem();
         item.setCount(0);
 
-        doReturn(List.of(cartItem)).when(itemRepository).findAllByCountGreaterThan(anyInt());
+        List<Item> page = List.of(cartItem);
 
-        List<Item> items = itemService.getAllInCart();
+        doReturn(Flux.fromIterable(page)).when(itemRepository).findAllByCountGreaterThan(anyInt());
+
+        StepVerifier.create(
+            itemService.getAllInCart()
+        ).assertNext(actualItem ->
+            assertEquals(cartItem, actualItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findAllByCountGreaterThan(0);
-        assertEquals(1, items.size());
-        assertTrue(items.contains(cartItem));
     }
 
     @Test
@@ -235,17 +291,17 @@ class ItemServiceTest {
         expectedItem.setId(TEST_ID);
         expectedItem.setCount(item.getCount() + 1);
 
-        doReturn(Optional.of(item)).when(itemRepository).findById(anyLong());
-        doReturn(expectedItem).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(item)).when(itemRepository).findById(anyLong());
+        doReturn(Mono.just(expectedItem)).when(itemRepository).save(any(Item.class));
 
-        itemService.changeAmount(item.getId(), "PLUS");
+        StepVerifier.create(
+            itemService.changeAmount(item.getId(), "PLUS")
+        ).assertNext(actualItem ->
+            assertEquals(actualItem, expectedItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-        verify(itemRepository, times(1)).save(captor.capture());
-
-        Integer actualCount = captor.getValue().getCount();
-        assertEquals(expectedItem.getCount(), actualCount);
+        verify(itemRepository, times(1)).save(expectedItem);
     }
 
     @Test
@@ -258,17 +314,17 @@ class ItemServiceTest {
         expectedItem.setId(TEST_ID);
         expectedItem.setCount(item.getCount() - 1);
 
-        doReturn(Optional.of(item)).when(itemRepository).findById(anyLong());
-        doReturn(expectedItem).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(item)).when(itemRepository).findById(anyLong());
+        doReturn(Mono.just(expectedItem)).when(itemRepository).save(any(Item.class));
 
-        itemService.changeAmount(item.getId(), "MINUS");
+        StepVerifier.create(
+            itemService.changeAmount(item.getId(), "MINUS")
+        ).assertNext(actualItem ->
+            assertEquals(actualItem, expectedItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-        verify(itemRepository, times(1)).save(captor.capture());
-
-        Integer actualCount = captor.getValue().getCount();
-        assertEquals(expectedItem.getCount(), actualCount);
+        verify(itemRepository, times(1)).save(expectedItem);
     }
 
     @Test
@@ -281,17 +337,17 @@ class ItemServiceTest {
         expectedItem.setId(TEST_ID);
         expectedItem.setCount(item.getCount());
 
-        doReturn(Optional.of(item)).when(itemRepository).findById(anyLong());
-        doReturn(expectedItem).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(item)).when(itemRepository).findById(anyLong());
+        doReturn(Mono.just(expectedItem)).when(itemRepository).save(any(Item.class));
 
-        itemService.changeAmount(item.getId(), "MINUS");
+        StepVerifier.create(
+            itemService.changeAmount(item.getId(), "MINUS")
+        ).assertNext(actualItem ->
+            assertEquals(actualItem, expectedItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-        verify(itemRepository, times(1)).save(captor.capture());
-
-        Integer actualCount = captor.getValue().getCount();
-        assertEquals(expectedItem.getCount(), actualCount);
+        verify(itemRepository, times(1)).save(expectedItem);
     }
 
     @Test
@@ -304,28 +360,27 @@ class ItemServiceTest {
         expectedItem.setId(TEST_ID);
         expectedItem.setCount(0);
 
-        doReturn(Optional.of(item)).when(itemRepository).findById(anyLong());
-        doReturn(expectedItem).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(item)).when(itemRepository).findById(anyLong());
+        doReturn(Mono.just(expectedItem)).when(itemRepository).save(any(Item.class));
 
-        itemService.changeAmount(item.getId(), "DELETE");
+        StepVerifier.create(
+            itemService.changeAmount(item.getId(), "DELETE")
+        ).assertNext(actualItem ->
+            assertEquals(actualItem, expectedItem)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).findById(TEST_ID);
-        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-        verify(itemRepository, times(1)).save(captor.capture());
-
-        Integer actualCount = captor.getValue().getCount();
-        assertEquals(expectedItem.getCount(), actualCount);
+        verify(itemRepository, times(1)).save(expectedItem);
     }
 
     @Test
     void addItem_shouldSaveItem() throws IOException {
-        MockMultipartFile image = populateMultipart();
-
+        FilePart image = populateFilePart();
         Item item = populateItem();
 
-        doReturn(item).when(itemRepository).save(any(Item.class));
+        doReturn(Mono.just(item)).when(itemRepository).save(any(Item.class));
 
-        itemService.addItem(item, image);
+        itemService.addItem(item, image).block();
 
         Path expectedPath = tempDir.resolve(TEST_FILE_NAME);
         assertTrue(Files.exists(expectedPath));
@@ -339,27 +394,41 @@ class ItemServiceTest {
         Item item = populateItem();
         List<Item> items = List.of(item);
 
-        doReturn(items).when(itemRepository).saveAll(anyList());
+        doReturn(Flux.fromIterable(items)).when(itemRepository).saveAll(anyList());
 
-        itemService.updateItems(items);
+        StepVerifier.create(
+            itemService.updateItems(items)
+        ).assertNext(actualItem ->
+            assertEquals(actualItem, item)
+        ).verifyComplete();
 
         verify(itemRepository, times(1)).saveAll(items);
     }
 
-    private MockMultipartFile populateMultipart() {
-        return new MockMultipartFile(
-            "file", TEST_FILE_NAME, TEST_FILE_CONTENT_TYPE, TEST_FILE_CONTENT.getBytes());
+    private FilePart populateFilePart() {
+        FilePart filePart = mock(FilePart.class);
+
+        when(filePart.filename()).thenReturn(TEST_FILE_NAME);
+
+        DataBuffer buffer = new DefaultDataBufferFactory().wrap(TEST_FILE_CONTENT.getBytes());
+        Flux<DataBuffer> content = Flux.just(buffer);
+        when(filePart.content()).thenReturn(content);
+
+        when(filePart.transferTo(any(Path.class))).thenAnswer(invocation -> {
+            Path path = invocation.getArgument(0);
+            return Mono.fromRunnable(() -> {
+                try {
+                    Files.writeString(path, TEST_FILE_CONTENT);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        return filePart;
     }
 
     private Item populateItem() {
-        Item item = new Item();
-
-        item.setTitle(TEST_TITLE);
-        item.setDescription(TEST_DESCRIPTION);
-        item.setCount(1);
-        item.setPrice(TEST_PRICE);
-        item.setImgPath(TEST_IMG_PATH);
-
-        return item;
+        return populateItemNoId();
     }
 }
