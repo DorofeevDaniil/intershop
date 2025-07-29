@@ -7,9 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import ru.custom.intershop.initializer.ImageStartupInitializer;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.service.ItemService;
@@ -37,24 +37,27 @@ class ImageStartupInitializerTest {
     }
 
     @Test
-    void shouldSaveItemsWhenDatabaseIsEmpty() throws Exception {
+    void shouldSaveItemsWhenDatabaseIsEmpty() {
         // given
-        when(itemService.getTotalCount()).thenReturn(0L);
+        when(itemService.getTotalCount()).thenReturn(Mono.just(0L));
+        when(itemService.save(any(Item.class))).thenReturn(Mono.just(new Item()));
 
         // when
-        initializer.populatePosts(new ContextRefreshedEvent(new StaticApplicationContext()));
+        StepVerifier.create(initializer.runItemInitialization())
+            .verifyComplete();
 
         // then
         verify(itemService, atLeastOnce()).save(any(Item.class));
     }
 
     @Test
-    void shouldDoNothingWhenDatabaseIsNotEmpty() throws Exception {
+    void shouldDoNothingWhenDatabaseIsNotEmpty() {
         // given
-        when(itemService.getTotalCount()).thenReturn(10L);
+        when(itemService.getTotalCount()).thenReturn(Mono.just(10L));
 
         // when
-        initializer.populatePosts(new ContextRefreshedEvent(new StaticApplicationContext()));
+        StepVerifier.create(initializer.runItemInitialization())
+            .verifyComplete();
 
         // then
         verify(itemService, never()).save(any(Item.class));

@@ -56,12 +56,16 @@ public class ImageStartupInitializer {
 
     @EventListener(ContextRefreshedEvent.class)
     public void populateItems(ContextRefreshedEvent event) {
-        itemService.getTotalCount()
+        runItemInitialization().subscribe();
+    }
+
+    public Mono<Void> runItemInitialization() {
+        return itemService.getTotalCount()
             .filter(count -> count == 0)
             .flatMapMany(empty -> Flux.fromIterable(INIT_FILES.entrySet()))
             .flatMap(entry -> createAndSaveItem(entry.getKey(), entry.getValue()))
             .doOnError(e -> log.error("Error during initialization", e))
-            .subscribe();
+            .then();
     }
 
     private Mono<Item> createAndSaveItem(String fileKey, String title) {
