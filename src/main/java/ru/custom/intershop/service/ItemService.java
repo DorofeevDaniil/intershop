@@ -71,7 +71,7 @@ public class ItemService {
     }
 
     public Mono<Item> getItemById(Long id) {
-        return itemRepository.findById(id);
+        return itemRepository.findById(id).defaultIfEmpty(new Item());
     }
 
     public Flux<Item> getAllInCart() {
