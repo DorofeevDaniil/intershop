@@ -1,50 +1,50 @@
 package ru.custom.intershop.integration.controller;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import ru.custom.intershop.service.ItemService;
 
-import java.math.BigDecimal;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CartControllerTest extends BaseControllerTest {
     @Autowired
     private ItemService itemService;
 
     @Test
-    void handleShowItems_shouldReturnItemsInCart() throws Exception {
-        itemService.changeAmount(1L, "PLUS");
+    void handleShowItems_shouldReturnItemsInCart() {
+        itemService.changeAmount(1L, "PLUS").block();
 
-        mockMvc.perform(get("/cart/items"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(view().name("cart"))
-            .andExpect(model().attributeExists("items"))
-            .andExpect(model().attributeExists("total"))
-            .andExpect(model().attributeExists("empty"))
-            .andExpect(model().attribute("items", hasSize(1)))
-            .andExpect(model().attribute("total", Matchers.is(BigDecimal.valueOf(100))))
-            .andExpect(model().attribute("empty", Matchers.is(false)));
+        webTestClient.get()
+                .uri("/cart/items")
+                .exchange()
+                    .expectStatus().isOk()
+                    .expectHeader().contentType(TEST_RESPONSE_MEDIA_TYPE)
+                    .expectBody(String.class)
+                    .value(body -> {
+                        assertThat(body).contains("test description 1");
+                        assertThat(body).contains("100");
+                        assertThat(body).contains("test title 1");
+                    });
 
     }
 
     @Test
-    void handleChangeAmount_shouldReturnBadRequest() throws Exception {
-        mockMvc.perform(post("/cart/items/1"))
-            .andExpect(status().isBadRequest());
+    void handleChangeAmount_shouldReturnBadRequest() {
+        webTestClient.post()
+                .uri("/cart/items/1")
+                    .exchange()
+                    .expectStatus().isBadRequest();
     }
 
     @Test
-    void handleChangeAmount_shouldAddItem() throws Exception {
-        mockMvc.perform(post("/cart/items/1")
-                .param("action", "PLUS"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/cart/items"));
+    void handleChangeAmount_shouldAddItem() {
+        webTestClient.post()
+            .uri("/cart/items/1")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .bodyValue("action=PLUS")
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().valueEquals("Location", "/cart/items");
     }
 }

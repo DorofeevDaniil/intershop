@@ -30,10 +30,9 @@ abstract class BaseRepositoryTest {
     protected OrderRepository orderRepository;
     @Autowired
     protected OrderItemRepository orderItemRepository;
-
     protected static final Integer TEST_PAGE = 1;
     protected static final Integer TEST_PAGE_SIZE = 10;
-
+    protected static final String SEARCH_PARAM = "1";
     @TempDir
     static Path tempDir;
 

@@ -10,8 +10,6 @@ import ru.custom.intershop.model.Item;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemRepositoryTest extends BaseRepositoryTest {
-    private static final String SEARCH_PARAM = "1";
-
     @RepeatedTest(value = 5, name = RepeatedTest.LONG_DISPLAY_NAME)
     void findAllByOrderByIdAsc_shouldReturnCurrentOrder() {
         StepVerifier.create(

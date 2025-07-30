@@ -1,48 +1,62 @@
 package ru.custom.intershop.integration.controller;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.web.reactive.function.BodyInserters;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AdminControllerTest extends BaseControllerTest {
-    private static final String TEST_FILE_NAME = "test-image.jpg";
-    private static final String TEST_FILE_CONTENT = "test file content";
-    private static final String TEST_FILE_CONTENT_TYPE = "image/jpeg";
-
     @Test
-    void showDefault_shouldRedirectToAdd() throws Exception {
-        mockMvc.perform(get("/admin"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/admin/add"));
+    void showDefault_shouldRedirectToAdd() {
+        webTestClient.get()
+                .uri("/admin")
+                    .exchange()
+                        .expectStatus().is3xxRedirection()
+                        .expectHeader().valueEquals("Location", "/admin/add");
     }
 
     @Test
-    void showAdd_shouldReturnAddItemTemplate() throws Exception {
-        mockMvc.perform(get("/admin/add"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(view().name("add-item"))
-            .andReturn();
+    void showAdd_shouldReturnAddItemTemplate() {
+        webTestClient.get()
+                .uri("/admin/add")
+                    .exchange()
+                        .expectStatus().isOk()
+                        .expectHeader().contentType(TEST_RESPONSE_MEDIA_TYPE)
+                        .expectBody(String.class).consumeWith(response -> {
+                            String body = response.getResponseBody();
+                            assertNotNull(body);
+                            assertTrue(body.contains("Введите название товара"));
+                        });
     }
 
     @Test
-    void handleAddItem_shouldUpdateItem() throws Exception {
-        MockMultipartFile imageFile = createMultipart();
-
-        mockMvc.perform(multipart("/admin/add")
-                .file(imageFile)
-                .param("title", "new title")
-                .param("price", "100")
-                .param("description", "some test description"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/admin/add"));
+    void handleAddItem_shouldUpdateItem() {
+        webTestClient.post()
+            .uri("/admin/add")
+            .body(BodyInserters.fromMultipartData(createMultipartBuilder().build()))
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().valueEquals("Location", "/admin/add");
     }
 
-    private MockMultipartFile createMultipart() {
-        return new MockMultipartFile(
-            "image", TEST_FILE_NAME, TEST_FILE_CONTENT_TYPE, TEST_FILE_CONTENT.getBytes());
+    private MultipartBodyBuilder createMultipartBuilder() {
+        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
+        multipartBodyBuilder.part("image", TEST_FILE_CONTENT)
+            .filename(TEST_FILE_NAME)
+            .contentType(TEST_FILE_CONTENT_TYPE);
+
+        multipartBodyBuilder.part("title", "new title")
+            .header("Content-Disposition", "form-data; name=title");
+
+        multipartBodyBuilder.part("price", "100")
+            .header("Content-Disposition", "form-data; name=price");
+
+        multipartBodyBuilder.part("description", "some test description")
+            .header("Content-Disposition", "form-data; name=description");
+
+        return multipartBodyBuilder;
     }
 }

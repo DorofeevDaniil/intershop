@@ -1,36 +1,40 @@
 package ru.custom.intershop.integration.controller;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ItemControllerTest extends BaseControllerTest {
     @Test
-    void handleShowItem_shouldReturnItemPage() throws Exception {
-        mockMvc.perform(get("/items/1"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(view().name("item"))
-            .andExpect(model().attributeExists("item"))
-            .andExpect(model().attribute("item",
-                Matchers.hasProperty("id", Matchers.comparesEqualTo(1L))));
+    void handleShowItem_shouldReturnItemPage() {
+        webTestClient.get()
+                .uri("/items/1")
+                    .exchange()
+                        .expectHeader().contentType(TEST_RESPONSE_MEDIA_TYPE)
+                        .expectBody(String.class)
+                        .value(body -> {
+                            assertThat(body).contains("test title 1");
+                            assertThat(body).contains("test description 1");
+                        });
     }
 
     @Test
-    void handleChangeAmount_shouldReturnBadRequest() throws Exception {
-        mockMvc.perform(post("/items/1"))
-            .andExpect(status().isBadRequest());
+    void handleChangeAmount_shouldReturnBadRequest() {
+        webTestClient.post()
+                .uri("/items/1")
+                    .exchange()
+                        .expectStatus().isBadRequest();
     }
 
     @Test
-    void handleChangeAmount_shouldAddItem() throws Exception {
-        mockMvc.perform(post("/items/1")
-                .param("action", "PLUS"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/items/1"));
+    void handleChangeAmount_shouldAddItem() {
+        webTestClient.post()
+            .uri("/items/1")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .bodyValue("action=PLUS")
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().valueEquals("Location", "/items/1");
     }
 }
