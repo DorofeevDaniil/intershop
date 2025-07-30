@@ -1,8 +1,10 @@
 package ru.custom.intershop.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
@@ -39,8 +41,16 @@ public class CartController {
         @PathVariable("id") Long id,
         ServerWebExchange exchange
     ) {
-        return exchange.getFormData().flatMap(data ->
-            cartService.changeItemAmount(id, data.getFirst("action"))
-                .thenReturn("redirect:/cart/items"));
+        return exchange.getFormData()
+            .flatMap(data -> {
+                String action = data.getFirst("action");
+
+                if (action == null) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
+                }
+
+                return cartService.changeItemAmount(id, action)
+                    .thenReturn("redirect:/cart/items");
+            });
     }
 }
