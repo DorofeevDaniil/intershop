@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -23,9 +24,11 @@ public class ItemService {
     @Value("${app.upload-dir}")
     private String relativePath;
     private final ItemRepository itemRepository;
+    private final ItemCacheService itemCacheService;
 
-    public ItemService(ItemRepository itemRepository) {
+    public ItemService(ItemRepository itemRepository, ItemCacheService itemCacheService) {
         this.itemRepository = itemRepository;
+        this.itemCacheService = itemCacheService;
     }
 
     public Mono<Item> save(Item item) {
@@ -33,11 +36,9 @@ public class ItemService {
     }
 
     public Flux<Item> getPage(Integer page, Integer pageSize, String sort) {
-        return switch (sort.toUpperCase()) {
-            case "ALPHA" -> itemRepository.findAllByOrderByTitleAsc(PageRequest.of(page - 1, pageSize));
-            case "PRICE" -> itemRepository.findAllByOrderByPriceAsc(PageRequest.of(page - 1, pageSize));
-            default -> itemRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, pageSize));
-        };
+        Supplier<Flux<Item>> itemsSupplier = itemRepository::findAll;
+        return itemCacheService.ensureCacheLoadedIfMissing(itemsSupplier)
+            .thenMany(itemCacheService.getSortedPage("PRICE", page, pageSize));
     }
 
     public Flux<Item> findBySearchParams(Integer page, Integer pageSize, String sort, String searchText) {
