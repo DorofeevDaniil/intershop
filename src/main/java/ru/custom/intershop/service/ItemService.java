@@ -38,7 +38,7 @@ public class ItemService {
     public Flux<Item> getPage(Integer page, Integer pageSize, String sort) {
         Supplier<Flux<Item>> itemsSupplier = itemRepository::findAll;
         return itemCacheService.ensureCacheLoadedIfMissing(itemsSupplier)
-            .thenMany(itemCacheService.getSortedPage("PRICE", page, pageSize));
+            .thenMany(itemCacheService.getSortedPage(sort, page, pageSize));
     }
 
     public Flux<Item> findBySearchParams(Integer page, Integer pageSize, String sort, String searchText) {

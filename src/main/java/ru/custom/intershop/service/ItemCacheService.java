@@ -1,6 +1,7 @@
 package ru.custom.intershop.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -37,15 +38,15 @@ public class ItemCacheService {
 
     public Flux<Item> getSortedPage(String sortBy, int page, int size) {
         String zsetKey = switch (sortBy) {
-            case "PRICE" -> "products:by_price";
-            case "ALPHA" -> "products:by_title";
+            case "PRICE" -> "items:by_price";
+            case "ALPHA" -> "items:by_title";
+            case "NO" -> "items:by_id";
             default -> throw new IllegalArgumentException("Unknown sort: " + sortBy);
         };
+        long start = (long) (page - 1) * size;
+        long end = start + size - 1;
 
-        int start = (page - 1) * size;
-        int end = start + size - 1;
-
-        return zSetOperations.range(zsetKey, start, end)
+        return zSetOperations.range(zsetKey, Range.closed(start, end))
             .flatMap(idObj -> {
                 String hashKey = getKey(idObj.toString());
 
@@ -92,6 +93,13 @@ public class ItemCacheService {
                 .doOnNext(success -> {
                     if (Boolean.FALSE.equals(success)) {
                         log.warn("ZSet insert by_price failed for item {}", item.getId());
+                    }
+                })
+                .doOnError(e -> log.error("ZSet insert by_price error for item {}", item.getId(), e)))
+            .then(zSetOperations.add("items:by_id", item.getId(), item.getId())
+                .doOnNext(success -> {
+                    if (Boolean.FALSE.equals(success)) {
+                        log.warn("ZSet insert by_id failed for item {}", item.getId());
                     }
                 })
                 .doOnError(e -> log.error("ZSet insert by_price error for item {}", item.getId(), e)))

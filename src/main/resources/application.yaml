@@ -4,8 +4,8 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: 127.0.0.1
+      port: 6380
 
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -41,6 +41,7 @@ logging:
     root: INFO
     org:springframework.web: INFO
     org.springframework.r2dbc.core: DEBUG
+    org.springframework.data.redis.connection: DEBUG
   file:
     name: logs/app.log
   logback:
