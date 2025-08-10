@@ -11,21 +11,21 @@ import java.util.Map;
 public class RedisCartCacheRepository implements CartCacheRepository {
     private static final String CART_KEY = "cart";
 
-    private final ReactiveRedisTemplate<String, Object> redisTemplate;
+    private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
 
     public RedisCartCacheRepository(ReactiveRedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this.reactiveRedisTemplate = redisTemplate;
     }
 
     @Override
     public Flux<Map.Entry<Object, Object>> findAll() {
-        return redisTemplate.opsForHash()
+        return reactiveRedisTemplate.opsForHash()
             .entries(CART_KEY);
     }
 
     @Override
     public Mono<Integer> findById(String id) {
-        return redisTemplate.opsForHash()
+        return reactiveRedisTemplate.opsForHash()
             .get(CART_KEY, id)
             .map(count -> Integer.valueOf(count.toString()))
             .defaultIfEmpty(0);
@@ -33,18 +33,18 @@ public class RedisCartCacheRepository implements CartCacheRepository {
 
     @Override
     public Mono<Long> deleteItem(String id) {
-        return redisTemplate.opsForHash()
+        return reactiveRedisTemplate.opsForHash()
             .remove(CART_KEY, id);
     }
 
     @Override
     public Mono<Long> updateItemAmount(String id, Integer increment) {
-        return redisTemplate.opsForHash()
+        return reactiveRedisTemplate.opsForHash()
             .increment(CART_KEY, id, increment);
     }
 
     @Override
     public Mono<Long> deleteCart() {
-        return redisTemplate.delete(CART_KEY);
+        return reactiveRedisTemplate.delete(CART_KEY);
     }
 }

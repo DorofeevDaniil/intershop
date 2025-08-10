@@ -16,19 +16,19 @@ public class RedisItemCacheRepository implements ItemCacheRepository {
     private static final String ITEM_CARD_PREFIX = "item:card:";
     private static final String ITEMS_LIST_KEY = "items:list";
 
-    private final ReactiveRedisTemplate<String, Object> redisTemplate;
+    private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
     private final ReactiveRedisTemplate<String, ItemDto> itemDtoReactiveRedisTemplate;
 
     public RedisItemCacheRepository(ReactiveRedisTemplate<String, Object> redisTemplate,
                             ReactiveRedisTemplate<String, ItemDto> itemDtoReactiveRedisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this.reactiveRedisTemplate = redisTemplate;
         this.itemDtoReactiveRedisTemplate = itemDtoReactiveRedisTemplate;
     }
 
 
     @Override
     public Mono<List<ItemListDto>> findAll() {
-        return redisTemplate.opsForValue().get(ITEMS_LIST_KEY)
+        return reactiveRedisTemplate.opsForValue().get(ITEMS_LIST_KEY)
             .flatMap(obj -> {
                 if (obj == null) return Mono.empty();
                 try {
@@ -44,7 +44,7 @@ public class RedisItemCacheRepository implements ItemCacheRepository {
 
     @Override
     public Mono<List<ItemListDto>> saveAll(List<ItemListDto> list) {
-        return redisTemplate.opsForValue().set(ITEMS_LIST_KEY, list).thenReturn(list);
+        return reactiveRedisTemplate.opsForValue().set(ITEMS_LIST_KEY, list).thenReturn(list);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class RedisItemCacheRepository implements ItemCacheRepository {
 
     @Override
     public Mono<Long> deleteList() {
-        return redisTemplate.delete(ITEMS_LIST_KEY);
+        return reactiveRedisTemplate.delete(ITEMS_LIST_KEY);
     }
 
     @Override
