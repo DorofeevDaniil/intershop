@@ -85,7 +85,7 @@ public class ImageStartupInitializer {
                     .setScale(2, RoundingMode.DOWN));
                 item.setCount(0);
 
-                return itemService.save(item);
+                return itemService.saveToDb(item);
             });
     }
 
