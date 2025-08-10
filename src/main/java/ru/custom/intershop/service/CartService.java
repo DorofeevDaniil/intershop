@@ -1,34 +1,61 @@
 package ru.custom.intershop.service;
 
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.custom.intershop.model.Cart;
-import ru.custom.intershop.model.Item;
+import ru.custom.intershop.repository.RedisCartCacheRepository;
 
-import java.math.BigDecimal;
+import java.util.Map;
 
 @Service
 public class CartService {
-    private ItemService itemService;
+    private final RedisCartCacheRepository cartCacheRepository;
 
-    public CartService(ItemService itemService) {
-        this.itemService = itemService;
+    public CartService(RedisCartCacheRepository cartCacheRepository) {
+        this.cartCacheRepository = cartCacheRepository;
     }
 
-    public Mono<Cart> getCart() {
-        return itemService.getAllInCart()
-            .collectList()
-            .flatMap(items -> {
-                BigDecimal total = items.stream()
-                    .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getCount())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+    public Mono<Boolean> changeAmount(Long id, String action) {
+        return switch (action.toUpperCase()) {
+            case "PLUS" -> incrementItem(id);
+            case "MINUS" -> decrementItem(id);
+            case "DELETE" -> removeItem(id);
+            default -> throw new IllegalStateException("Unexpected value: " + action.toUpperCase());
+        };
+    }
 
-                return Mono.just(new Cart(items, total));
+    public Flux<Map.Entry<Object, Object>> getCart() {
+        return cartCacheRepository.findAll();
+    }
+
+    public Mono<Integer> getItemAmount(Long id) {
+        return cartCacheRepository.findById(id.toString());
+    }
+
+    public Mono<Long> cleanCart() {
+        return cartCacheRepository.deleteCart();
+    }
+
+    private Mono<Boolean> incrementItem(Long id) {
+        return cartCacheRepository.updateItemAmount(id.toString(), 1)
+            .thenReturn(true);
+    }
+
+    private Mono<Boolean> decrementItem(Long id) {
+        return cartCacheRepository.findById(id.toString())
+            .flatMap(count -> {
+                if (count <= 1) {
+                    return cartCacheRepository.deleteItem(id.toString())
+                        .thenReturn(true);
+                } else {
+                    return cartCacheRepository.updateItemAmount(id.toString(), -1)
+                        .thenReturn(true);
+                }
             });
     }
 
-    public Mono<Item> changeItemAmount(Long id, String action) {
-        return itemService.changeAmount(id, action);
+    private Mono<Boolean> removeItem(Long id) {
+        return cartCacheRepository.deleteItem(id.toString())
+            .thenReturn(true);
     }
-
 }

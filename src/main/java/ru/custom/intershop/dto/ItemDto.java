@@ -15,6 +15,6 @@ public class ItemDto implements Serializable {
     private String title;
     private String description;
     private String imgPath;
-    private int count;
+    private Integer count;
     private BigDecimal price;
 }

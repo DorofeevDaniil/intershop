@@ -6,7 +6,6 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.custom.intershop.dto.OrderDto;
-import ru.custom.intershop.mapper.ItemMapper;
 import ru.custom.intershop.model.Cart;
 import ru.custom.intershop.model.Item;
 import ru.custom.intershop.model.Order;
@@ -21,17 +20,20 @@ import java.util.List;
 public class OrderService {
     private OrderRepository orderRepository;
     private OrderItemRepository orderItemRepository;
+    private CartService cartService;
     private ItemService itemService;
     private final TransactionalOperator txOperator;
 
     public OrderService(
         OrderRepository orderRepository,
         OrderItemRepository orderItemRepository,
+        CartService cartService,
         ItemService itemService,
         ReactiveTransactionManager txManager
     ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
+        this.cartService = cartService;
         this.itemService = itemService;
         this.txOperator = TransactionalOperator.create(txManager);
     }
@@ -42,7 +44,7 @@ public class OrderService {
                 orderItemRepository.saveAll(
                     populateOrderItems(
                         savedOrder.getId(), cart))
-                    .then(cleanCartItems(cart))
+                    .then(cleanCartItems())
                     .thenReturn(savedOrder.getId()))
             .as(txOperator::transactional);
     }
@@ -50,10 +52,10 @@ public class OrderService {
     public Mono<OrderDto> getOrderById(Long id) {
         return orderItemRepository.findAllByOrderId(id)
             .flatMap(orderItem ->
-                itemService.getItemById(orderItem.getItemId())
+                itemService.getItemCardById(orderItem.getItemId())
                     .map(relatedItem -> {
                         relatedItem.setCount(orderItem.getCount());
-                        return ItemMapper.toItemDto(relatedItem);
+                        return relatedItem;
                     })
             )
             .collectList()
@@ -71,10 +73,10 @@ public class OrderService {
             .flatMap(order ->
                 orderItemRepository.findAllByOrderId(order.getId())
                     .flatMap(orderItem ->
-                        itemService.getItemById(orderItem.getItemId())
+                        itemService.getItemCardById(orderItem.getItemId())
                             .map(relatedItem -> {
                                 relatedItem.setCount(orderItem.getCount());
-                                return ItemMapper.toItemDto(relatedItem);
+                                return relatedItem;
                             })
                     )
                     .collectList()
@@ -103,13 +105,8 @@ public class OrderService {
         return orderItems;
     }
 
-    private Mono<Void> cleanCartItems(Cart cart) {
-        return Flux.fromIterable(cart.getItems())
-            .map(item -> {
-                item.setCount(0);
-                return item;
-            })
-            .collectList()
-            .flatMap(items -> itemService.updateItems(items).then());
+    private Mono<Void> cleanCartItems() {
+        return cartService.cleanCart()
+            .then();
     }
 }
