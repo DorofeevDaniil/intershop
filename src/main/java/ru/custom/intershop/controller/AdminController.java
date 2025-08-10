@@ -6,17 +6,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import ru.custom.intershop.model.Item;
-import ru.custom.intershop.service.ItemService;
+import ru.custom.intershop.service.StoreFrontService;
 
 import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private ItemService itemService;
+    private final StoreFrontService storeFrontService;
 
-    public AdminController(ItemService itemService) {
-        this.itemService = itemService;
+    public AdminController(StoreFrontService storeFrontService) {
+        this.storeFrontService = storeFrontService;
     }
 
     @GetMapping
@@ -51,7 +51,7 @@ public class AdminController {
                 item.setImgPath(image.filename());
                 item.setCount(0);
 
-                return itemService.addItem(item, image);
+                return storeFrontService.createItem(item, image);
             })
             .thenReturn("redirect:/admin/add");
     }

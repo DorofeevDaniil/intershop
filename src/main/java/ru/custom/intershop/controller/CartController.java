@@ -8,23 +8,22 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
-import ru.custom.intershop.service.CartService;
-import ru.custom.intershop.mapper.CartMapper;
+import ru.custom.intershop.service.StoreFrontService;
 
 @Controller
 @RequestMapping("/cart")
 public class CartController {
-    private CartService cartService;
+    private StoreFrontService storeFrontService;
 
-    public CartController(CartService cartService) {
-        this.cartService = cartService;
+    public CartController(StoreFrontService storeFrontService) {
+        this.storeFrontService = storeFrontService;
     }
 
 
     @GetMapping("/items")
     public Mono<String> handleShowItems(WebSession session, Model model) {
-        return cartService.getCart()
-            .flatMap(cart -> Mono.just(CartMapper.toCartDto(cart)))
+        return storeFrontService.getCart()
+            .flatMap(Mono::just)
             .map(cartDto -> {
                 model.addAttribute("items", cartDto.getItems());
                 model.addAttribute("total", cartDto.getTotal());
@@ -49,7 +48,7 @@ public class CartController {
                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
                 }
 
-                return cartService.changeItemAmount(id, action)
+                return storeFrontService.changeItemAmount(id, action)
                     .thenReturn("redirect:/cart/items");
             });
     }

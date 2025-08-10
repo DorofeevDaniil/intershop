@@ -7,15 +7,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import ru.custom.intershop.service.ItemService;
+import ru.custom.intershop.service.StoreFrontService;
 
 @Controller
 @RequestMapping("/items/{id}")
 public class ItemController {
-    private ItemService itemService;
+    private final StoreFrontService storeFrontService;
 
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
+    public ItemController(StoreFrontService storeFrontService) {
+        this.storeFrontService = storeFrontService;
     }
 
     @GetMapping
@@ -23,7 +23,7 @@ public class ItemController {
         @PathVariable("id") Long id,
         Model model
     ) {
-        return itemService.getItemById(id)
+        return storeFrontService.getItem(id)
             .map(item -> {
                 model.addAttribute("item", item);
                 return "item";
@@ -43,7 +43,7 @@ public class ItemController {
                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
                 }
 
-                return itemService.changeAmount(id, action)
+                return storeFrontService.changeItemAmount(id, action)
                             .thenReturn( "redirect:/items/" + id);
             });
     }

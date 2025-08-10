@@ -7,23 +7,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.custom.intershop.model.Item;
-import ru.custom.intershop.pagination.Paging;
-import ru.custom.intershop.service.ItemService;
-
-import java.util.ArrayList;
-import java.util.List;
+import ru.custom.intershop.service.StoreFrontService;
 
 @Controller
 @RequestMapping("/main/items")
 public class MainController {
-    private final ItemService itemService;
+    private final StoreFrontService storeFrontService;
 
     @Autowired
-    public MainController(ItemService itemService) {
-        this.itemService = itemService;
+    public MainController(StoreFrontService storeFrontService) {
+        this.storeFrontService = storeFrontService;
     }
 
     @GetMapping
@@ -34,32 +28,12 @@ public class MainController {
         @RequestParam(name = "sort", required = true, defaultValue = "NO") String sort,
         Model model
     ) {
-        Flux<Item> itemsFlux;
-        Mono<Long> totalElementsMono;
-
-        if (search == null || search.isBlank()) {
-            itemsFlux = itemService.getPage(page, pageSize, sort);
-            totalElementsMono = itemService.getTotalCount();
-        } else {
-            itemsFlux =  itemService.findBySearchParams(page, pageSize, sort, search);
-            totalElementsMono = itemService.getTotalSearchedElements(search);
-
-            model.addAttribute("search", search);
-        }
-
-        return Mono.zip(itemsFlux.collectList(), totalElementsMono)
-            .map(tuple -> {
-                List<Item> itemsList = tuple.getT1();
-                Long totalElements = tuple.getT2();
-
-                List<List<Item>> rows = new ArrayList<>();
-                for (int i = 0; i < itemsList.size(); i += 3) {
-                    rows.add(itemsList.subList(i, Math.min(i + 3, itemsList.size())));
-                }
-
-                model.addAttribute("items", rows);
+        return storeFrontService.getPage(page, pageSize, sort, search)
+            .map(pageResult -> {
+                model.addAttribute("search", search);
+                model.addAttribute("items", pageResult.getContent());
                 model.addAttribute("sort", sort);
-                model.addAttribute("paging", new Paging(rows, page, pageSize, totalElements));
+                model.addAttribute("paging", pageResult);
 
                 return "main";
             });
@@ -78,7 +52,7 @@ public class MainController {
                 return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
             }
 
-            return itemService.changeAmount(id, action)
+            return storeFrontService.changeItemAmount(id, action)
                 .then(Mono.fromSupplier(() -> {
                     if (referer == null) {
                         return "redirect:/main/items";
