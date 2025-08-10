@@ -1,30 +1,23 @@
 package ru.custom.intershop.pagination;
 
-import ru.custom.intershop.model.Item;
+import ru.custom.intershop.dto.ItemDto;
 
 import java.util.List;
 
 public class Paging {
-    private final List<List<Item>> content;
+    private final List<List<ItemDto>> content;
     private final int pageNumber;
     private final int pageSize;
     private final long totalElements;
 
-    public Paging(List<List<Item>> content, int pageNumber, int pageSize, long totalElements) {
+    public Paging(List<List<ItemDto>> content, int pageNumber, int pageSize, long totalElements) {
         this.content = content;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.totalElements = totalElements;
     }
 
-    public Paging(List<List<Item>> content, int pageSize, long totalElements) {
-        this.content = content;
-        this.pageNumber = 1;
-        this.pageSize = pageSize;
-        this.totalElements = totalElements;
-    }
-
-    public List<List<Item>> getContent() {
+    public List<List<ItemDto>> getContent() {
         return content;
     }
 
