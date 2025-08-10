@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 import ru.custom.intershop.dto.CartDto;
 import ru.custom.intershop.dto.ItemDto;
 import ru.custom.intershop.model.Item;
-import ru.custom.intershop.pagination.Paging;
+import ru.custom.intershop.pagination.PagedResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,10 +38,11 @@ public class StoreFrontService {
         return cartService.changeAmount(id, action);
     }
 
-    public Mono<Paging> getPage(int page, int pageSize, String sort, String searchText) {
+    public Mono<PagedResult<ItemDto>> getPage(int page, int pageSize, String sort, String searchText) {
         return itemService.searchAndPaginate(page, pageSize, sort, searchText)
-            .flatMap(pagedResult -> {
-                List<ItemDto> items = pagedResult.getItems();
+            .flatMap(tuple -> {
+                List<ItemDto> items = tuple.getT1();
+                long total = tuple.getT2();
 
                 return Flux.fromIterable(items)
                     .flatMap(item ->
@@ -53,14 +54,7 @@ public class StoreFrontService {
                             })
                     )
                     .collectList()
-                    .map(itemsList -> {
-                        List<List<ItemDto>> rows = new ArrayList<>();
-                        for (int i = 0; i < itemsList.size(); i += 3) {
-                            rows.add(itemsList.subList(i, Math.min(i + 3, itemsList.size())));
-                        }
-
-                        return new Paging(rows, page, pageSize, pagedResult.getTotal());
-                    });
+                    .map(itemsList -> new PagedResult<>(splitRows(itemsList), page, pageSize, total));
             });
     }
 
@@ -89,5 +83,14 @@ public class StoreFrontService {
 
                 return Mono.just(new CartDto(items, total));
             });
+    }
+
+    private List<List<ItemDto>> splitRows(List<ItemDto> items) {
+        List<List<ItemDto>> rows = new ArrayList<>();
+        for (int i = 0; i < items.size(); i += 3) {
+            rows.add(items.subList(i, Math.min(i + 3, items.size())));
+        }
+
+        return rows;
     }
 }

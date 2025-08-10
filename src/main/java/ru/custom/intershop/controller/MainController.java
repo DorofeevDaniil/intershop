@@ -29,11 +29,11 @@ public class MainController {
         Model model
     ) {
         return storeFrontService.getPage(page, pageSize, sort, search)
-            .map(pageResult -> {
+            .map(pagedResult -> {
                 model.addAttribute("search", search);
-                model.addAttribute("items", pageResult.getContent());
+                model.addAttribute("items", pagedResult.getContent());
                 model.addAttribute("sort", sort);
-                model.addAttribute("paging", pageResult);
+                model.addAttribute("paging", pagedResult);
 
                 return "main";
             });

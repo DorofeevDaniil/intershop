@@ -7,11 +7,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 import ru.custom.intershop.dto.ItemDto;
 import ru.custom.intershop.dto.ItemListDto;
 import ru.custom.intershop.mapper.ItemMapper;
 import ru.custom.intershop.model.Item;
-import ru.custom.intershop.model.PagedResult;
 import ru.custom.intershop.repository.ItemRepository;
 import ru.custom.intershop.repository.RedisItemCacheRepository;
 
@@ -64,7 +65,7 @@ public class ItemService {
             .flatMap(list -> itemCacheRepository.saveAll(list));
     }
 
-    public Mono<PagedResult<ItemDto>> searchAndPaginate(int page, int pageSize, String sort, String searchText) {
+    public Mono<Tuple2<List<ItemDto>, Long>> searchAndPaginate(int page, int pageSize, String sort, String searchText) {
         return getItemsListCached()
             .flatMap(items -> {
                 Stream<ItemListDto> stream = items.stream()
@@ -92,7 +93,7 @@ public class ItemService {
                 return Flux.fromIterable(pageList)
                     .flatMap(dto -> getItemCardById(dto.getId()))
                     .collectList()
-                    .map(list -> new PagedResult<>(list, total));
+                    .map(list -> Tuples.of(list, total));
             });
     }
 
