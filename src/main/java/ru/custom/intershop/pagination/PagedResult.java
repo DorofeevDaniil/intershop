@@ -8,7 +8,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PagedResult<T> {
     @Getter
-    private final List<List<T>> content;
+    private final List<T> content;
     private final int pageNumber;
     private final int pageSize;
     private final long totalElements;

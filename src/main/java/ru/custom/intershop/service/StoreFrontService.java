@@ -38,7 +38,7 @@ public class StoreFrontService {
         return cartService.changeAmount(id, action);
     }
 
-    public Mono<PagedResult<ItemDto>> getPage(int page, int pageSize, String sort, String searchText) {
+    public Mono<PagedResult<List<ItemDto>>> getPage(int page, int pageSize, String sort, String searchText) {
         return itemService.searchAndPaginate(page, pageSize, sort, searchText)
             .flatMap(tuple -> {
                 List<ItemDto> items = tuple.getT1();
@@ -54,7 +54,7 @@ public class StoreFrontService {
                             })
                     )
                     .collectList()
-                    .map(itemsList -> new PagedResult<>(splitRows(itemsList), page, pageSize, total));
+                    .map(itemsList -> new PagedResult<>(splitRows(itemsList, 3), page, pageSize, total));
             });
     }
 
@@ -85,12 +85,11 @@ public class StoreFrontService {
             });
     }
 
-    private List<List<ItemDto>> splitRows(List<ItemDto> items) {
+    private List<List<ItemDto>> splitRows(List<ItemDto> items, int rowSize) {
         List<List<ItemDto>> rows = new ArrayList<>();
-        for (int i = 0; i < items.size(); i += 3) {
-            rows.add(items.subList(i, Math.min(i + 3, items.size())));
+        for (int i = 0; i < items.size(); i += rowSize) {
+            rows.add(items.subList(i, Math.min(i + rowSize, items.size())));
         }
-
         return rows;
     }
 }
