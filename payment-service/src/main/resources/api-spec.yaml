@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Payment Service API
+  description: API сервиса платежей
+  version: 1.0.0
+paths:
+  /api/balance:
+    get:
+      summary: Получить текущий баланс
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/BalanceDto'
+  /api/payment:
+    post:
+      summary: Оплатить новый заказ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentDto'
+      responses:
+        '200':
+          description: Заказ успешно оплачен
+        '400':
+          description: Ошибка при обработке платежа
+components:
+  schemas:
+    BalanceDto:
+      type: object
+      properties:
+        balance:
+          type: number
+          format: double
+          example: 100000.00
+    PaymentDto:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 150.00
