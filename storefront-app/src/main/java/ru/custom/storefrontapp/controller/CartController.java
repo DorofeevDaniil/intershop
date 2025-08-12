@@ -8,30 +8,36 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
+import ru.custom.storefrontapp.service.PaymentService;
 import ru.custom.storefrontapp.service.StoreFrontService;
+
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/cart")
 public class CartController {
     private StoreFrontService storeFrontService;
+    private final PaymentService paymentService;
 
-    public CartController(StoreFrontService storeFrontService) {
+    public CartController(StoreFrontService storeFrontService, PaymentService paymentService) {
         this.storeFrontService = storeFrontService;
+        this.paymentService = paymentService;
     }
 
 
     @GetMapping("/items")
     public Mono<String> handleShowItems(WebSession session, Model model) {
         return storeFrontService.getCart()
-            .flatMap(Mono::just)
-            .map(cartDto -> {
+            .flatMap(cartDto -> {
                 model.addAttribute("items", cartDto.getItems());
                 model.addAttribute("total", cartDto.getTotal());
                 model.addAttribute("empty", cartDto.isEmpty());
 
-                session.getAttributes().put("cart", cartDto);
-
-                return "cart";
+                return paymentService.getBalance()
+                    .map(balance -> {
+                        model.addAttribute("enoughMoney", balance.subtract(cartDto.getTotal()).compareTo(BigDecimal.ZERO) > 0);
+                        return "cart";
+                    });
             });
     }
 

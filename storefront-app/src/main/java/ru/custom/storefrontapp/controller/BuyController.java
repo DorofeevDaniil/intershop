@@ -27,10 +27,7 @@ public class BuyController {
                 if (cart == null || cart.isEmpty()) return Mono.just("redirect:/cart/items");
 
                 return orderService.createOrder(CartMapper.toCart(cart))
-                    .map(id -> {
-                        session.getAttributes().remove("cart");
-                        return "redirect:/orders/" + id + "?newOrder=true";
-                    });
+                    .map(id -> "redirect:/orders/" + id + "?newOrder=true");
             });
     }
 }

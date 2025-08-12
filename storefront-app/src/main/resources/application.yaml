@@ -28,8 +28,11 @@ spring:
 
 app:
   upload-dir: uploads/images/
+  payment-api:
+    url: http://localhost:8080
   init:
     enabled: true
+
 
 server:
   port: 9191

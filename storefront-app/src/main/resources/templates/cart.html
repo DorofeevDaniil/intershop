@@ -52,7 +52,7 @@
     <tr>
         <td style="text-align:right">
             <form th:action="@{/buy}" method="post" th:if="${!empty}">
-                <button>Купить</button>
+                <button th:disabled="${!enoughMoney}">Купить</button>
             </form>
         </td>
     </tr>

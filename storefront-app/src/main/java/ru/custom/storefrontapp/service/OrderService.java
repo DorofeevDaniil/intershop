@@ -5,6 +5,7 @@ import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.custom.paymentservice.domain.PaymentDto;
 import ru.custom.storefrontapp.dto.OrderDto;
 import ru.custom.storefrontapp.model.Cart;
 import ru.custom.storefrontapp.model.Item;
@@ -22,6 +23,7 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
     private CartService cartService;
     private ItemService itemService;
+    private PaymentService paymentService;
     private final TransactionalOperator txOperator;
 
     public OrderService(
@@ -29,12 +31,14 @@ public class OrderService {
         OrderItemRepository orderItemRepository,
         CartService cartService,
         ItemService itemService,
+        PaymentService paymentService,
         ReactiveTransactionManager txManager
     ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartService = cartService;
         this.itemService = itemService;
+        this.paymentService = paymentService;
         this.txOperator = TransactionalOperator.create(txManager);
     }
 
@@ -45,7 +49,14 @@ public class OrderService {
                     populateOrderItems(
                         savedOrder.getId(), cart))
                     .then(cleanCartItems())
-                    .thenReturn(savedOrder.getId()))
+                    .then(Mono.defer(() -> {
+                            PaymentDto paymentDto = new PaymentDto();
+                            paymentDto.setAmount(cart.getTotal().doubleValue());
+
+                            return paymentService.postPayment(paymentDto)
+                                .thenReturn(savedOrder.getId());
+                    }))
+            )
             .as(txOperator::transactional);
     }
 
