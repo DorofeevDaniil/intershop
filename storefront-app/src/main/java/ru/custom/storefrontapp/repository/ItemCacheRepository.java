@@ -1,0 +1,15 @@
+package ru.custom.storefrontapp.repository;
+
+import reactor.core.publisher.Mono;
+import ru.custom.storefrontapp.dto.ItemDto;
+import ru.custom.storefrontapp.dto.ItemListDto;
+
+import java.util.List;
+
+public interface ItemCacheRepository {
+    Mono<List<ItemListDto>> findAll();
+    Mono<List<ItemListDto>> saveAll(List<ItemListDto> list);
+    Mono<ItemDto> findById(Long id);
+    Mono<Long> deleteList();
+    Mono<Boolean> saveItem(Long id, ItemDto item);
+}
