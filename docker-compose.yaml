@@ -20,7 +20,7 @@ services:
       - db
       - redis
     volumes:
-      - ./uploads/images:/app/uploads/images
+      - ./uploads/images:/uploads/images
     environment:
       DB_NAME: postgres
       POSTGRES_USER: root
