@@ -25,7 +25,7 @@ openApiGenerate {
     configOptions.set([
             hideGenerationTimestamp: "true",
             requestMappingMode: "controller",
-            interfaceOnly: "false",
+            interfaceOnly: "true",
             library: "spring-boot",
             reactive: "true",
             useSpringBoot3: "true",

@@ -43,21 +43,20 @@ public class OrderService {
     }
 
     public Mono<Long> createOrder(Cart cart) {
-        return orderRepository.save(new Order())
-            .flatMap(savedOrder ->
-                orderItemRepository.saveAll(
-                    populateOrderItems(
-                        savedOrder.getId(), cart))
-                    .then(cleanCartItems())
-                    .then(Mono.defer(() -> {
-                            PaymentDto paymentDto = new PaymentDto();
-                            paymentDto.setAmount(cart.getTotal().doubleValue());
+        return Mono.defer(() -> {
+            PaymentDto paymentDto = new PaymentDto();
+            paymentDto.setAmount(cart.getTotal().doubleValue());
 
-                            return paymentService.postPayment(paymentDto)
-                                .thenReturn(savedOrder.getId());
-                    }))
-            )
-            .as(txOperator::transactional);
+            return paymentService.postPayment(paymentDto)
+                .then(
+                    orderRepository.save(new Order())
+                        .flatMap(savedOrder ->
+                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), cart))
+                                .then(cleanCartItems())
+                                .thenReturn(savedOrder.getId())
+                        )
+                );
+        }).as(txOperator::transactional);
     }
 
     public Mono<OrderDto> getOrderById(Long id) {
