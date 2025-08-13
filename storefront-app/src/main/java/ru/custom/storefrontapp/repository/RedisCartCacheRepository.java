@@ -5,11 +5,13 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Repository
 public class RedisCartCacheRepository implements CartCacheRepository {
     private static final String CART_KEY = "cart";
+    private static final Duration TTL = Duration.ofMinutes(60);
 
     private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
 
@@ -40,7 +42,11 @@ public class RedisCartCacheRepository implements CartCacheRepository {
     @Override
     public Mono<Long> updateItemAmount(String id, Integer increment) {
         return reactiveRedisTemplate.opsForHash()
-            .increment(CART_KEY, id, increment);
+            .increment(CART_KEY, id, increment)
+            .flatMap(amount ->
+                reactiveRedisTemplate.expire(CART_KEY, TTL)
+                    .thenReturn(amount)
+            );
     }
 
     @Override

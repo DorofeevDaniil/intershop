@@ -9,12 +9,14 @@ import reactor.core.publisher.Mono;
 import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.dto.ItemListDto;
 
+import java.time.Duration;
 import java.util.List;
 
 @Repository
 public class RedisItemCacheRepository implements ItemCacheRepository {
     private static final String ITEM_CARD_PREFIX = "item:card:";
     private static final String ITEMS_LIST_KEY = "items:list";
+    private static final Duration TTL = Duration.ofMinutes(60);
 
     private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
     private final ReactiveRedisTemplate<String, ItemDto> itemDtoReactiveRedisTemplate;
@@ -44,7 +46,9 @@ public class RedisItemCacheRepository implements ItemCacheRepository {
 
     @Override
     public Mono<List<ItemListDto>> saveAll(List<ItemListDto> list) {
-        return reactiveRedisTemplate.opsForValue().set(ITEMS_LIST_KEY, list).thenReturn(list);
+        return reactiveRedisTemplate.opsForValue().set(ITEMS_LIST_KEY, list)
+            .then(reactiveRedisTemplate.expire(ITEMS_LIST_KEY, TTL))
+            .thenReturn(list);
     }
 
     @Override
@@ -61,6 +65,7 @@ public class RedisItemCacheRepository implements ItemCacheRepository {
     @Override
     public Mono<Boolean> saveItem(Long id, ItemDto item) {
         String cardKey = ITEM_CARD_PREFIX + id;
-        return itemDtoReactiveRedisTemplate.opsForValue().set(cardKey, item);
+        return itemDtoReactiveRedisTemplate.opsForValue().set(cardKey, item)
+            .then(reactiveRedisTemplate.expire(cardKey, TTL));
     }
 }
