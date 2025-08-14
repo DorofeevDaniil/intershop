@@ -11,6 +11,12 @@ services:
   redis:
     image: redis/redis-stack:7.2.0-v15
 
+  payment-service:
+    build:
+      context: ./payment-service
+    ports:
+      - "8080:8080"
+
   web:
     build:
       context: ./storefront-app
@@ -19,6 +25,7 @@ services:
     depends_on:
       - db
       - redis
+      - payment-service
     volumes:
       - ./uploads/images:/uploads/images
     environment:
@@ -29,6 +36,9 @@ services:
       DB_PORT: 5432
       REDIS_PORT: 6379
       REDIS_HOST: redis
+      PAYMENT_SERVICE_HOST: payment-service
+      PAYMENT_SERVICE_PORT: 8080
+
 
 volumes:
   db_data:

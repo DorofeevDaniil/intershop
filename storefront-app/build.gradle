@@ -76,9 +76,9 @@ tasks.register('generateBatScripts') {
         def startFile = new File(outputDir, "start.bat")
         startFile.text = """@echo off
 setlocal
-if "%~5"=="" (
-    echo Usage: start.bat DB_HOST DB_PORT DB_NAME POSTGRES_USER POSTGRES_PASSWORD
-    echo Example: start.bat localhost 5432 postgres root root
+if "%~9"=="" (
+    echo Usage: start.bat DB_HOST DB_PORT DB_NAME POSTGRES_USER POSTGRES_PASSWORD REDIS_HOST REDIS_PORT PAYMENT_SERVICE_HOST PAYMENT_SERVICE_PORT
+    echo Example: start.bat localhost 5432 postgres root root 127.0.0.1 6379 localhost 8080
     exit /b 1
 )
 
@@ -89,6 +89,8 @@ set "POSTGRES_USER=%~4"
 set "POSTGRES_PASSWORD=%~5"
 set "REDIS_HOST=%~6"
 set "REDIS_PORT=%~7"
+set "PAYMENT_SERVICE_HOST=%~8"
+set "PAYMENT_SERVICE_PORT=%~9"
 
 echo Starting application...
 
@@ -99,6 +101,8 @@ set POSTGRES_USER=%POSTGRES_USER%
 set POSTGRES_PASSWORD=%POSTGRES_PASSWORD%
 set REDIS_HOST=%REDIS_HOST%
 set REDIS_PORT=%REDIS_PORT%
+set PAYMENT_SERVICE_HOST=%PAYMENT_SERVICE_HOST%
+set PAYMENT_SERVICE_PORT=%PAYMENT_SERVICE_PORT%
 
 set JAR_NAME=${jarName}
 
@@ -180,7 +184,7 @@ tasks.register('generateReadme') {
 
 ### Windows
 #### Запуск
-Выполнить команду `./build/libs/start.bat start.bat <DB_HOST> <DB_PORT> <DB_NAME> <POSTGRES_USER> <POSTGRES_PASSWORD> <REDIS_HOST> <REDIS_PORT>`
+Выполнить команду `./build/libs/start.bat start.bat <DB_HOST> <DB_PORT> <DB_NAME> <POSTGRES_USER> <POSTGRES_PASSWORD> <REDIS_HOST> <REDIS_PORT> <PAYMENT_SERVICE_HOST> <PAYMENT_SERVICE_PORT>`
 
 > [!WARNING]
 > Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/${jarName}`, предварительно задав переменные среды
@@ -191,6 +195,8 @@ tasks.register('generateReadme') {
 > 5.  `\$env:POSTGRES_PASSWORD="<POSTGRES_PASSWORD>"`
 > 6.  `\$env:REDIS_HOST="<REDIS_HOST>"`
 > 7.  `\$env:REDIS_PORT="<REDIS_PORT>"`
+> 8.  `\$env:PAYMENT_SERVICE_HOST="<PAYMENT_SERVICE_HOST>"`
+> 9.  `\$env:PAYMENT_SERVICE_PORT="<PAYMENT_SERVICE_PORT>"`
 >
 > Однако остановка будет возможна только последовательным выполнением команд
 > 1. `jps -lv | findstr /i ${appName}`
@@ -217,7 +223,9 @@ tasks.register('generateReadme') {
     \$env:POSTGRES_PASSWORD="<POSTGRES_PASSWORD>"
     \$env:REDIS_HOST="<REDIS_HOST>"
 	\$env:REDIS_PORT="<REDIS_PORT>"
-    ./gradlew bootRun
+	\$env:PAYMENT_SERVICE_HOST="<PAYMENT_SERVICE_HOST>"
+    \$env:PAYMENT_SERVICE_PORT="<PAYMENT_SERVICE_PORT>"
+    ./gradlew :${appName}:bootRun
 
 #### Unix-подобные системы
 
@@ -228,11 +236,13 @@ tasks.register('generateReadme') {
     export POSTGRES_PASSWORD=<POSTGRES_PASSWORD>
     export REDIS_HOST=<REDIS_HOST>
     export REDIS_PORT=<REDIS_PORT>
-    ./gradlew bootRun
+    export PAYMENT_SERVICE_HOST=<PAYMENT_SERVICE_HOST>
+    export PAYMENT_SERVICE_PORT=<PAYMENT_SERVICE_PORT>
+    ./gradlew :${appName}:bootRun
 
 ### В Intellij IDEA
 Открыть Run/Debug Configurations, добавить в конфигурацию запуска Environment variables с актуальным для запускаемой конфигурации содержимым
-`DB_HOST=<DB_HOST>;DB_PORT=<DB_PORT>;DB_NAME=<DB_NAME>;POSTGRES_USER=<POSTGRES_USER>;POSTGRES_PASSWORD=<POSTGRES_PASSWORD>;REDIS_HOST=<REDIS_HOST>;REDIS_PORT=<REDIS_PORT>`
+`DB_HOST=<DB_HOST>;DB_PORT=<DB_PORT>;DB_NAME=<DB_NAME>;POSTGRES_USER=<POSTGRES_USER>;POSTGRES_PASSWORD=<POSTGRES_PASSWORD>;REDIS_HOST=<REDIS_HOST>;REDIS_PORT=<REDIS_PORT>;PAYMENT_SERVICE_HOST=<PAYMENT_SERVICE_HOST>;PAYMENT_SERVICE_PORT=<PAYMENT_SERVICE_PORT>`
 
 > [!NOTE]
 >После запуска любым из вышеописанных способов приложение будет доступно по адресу http://localhost:9191/intershop

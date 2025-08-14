@@ -29,7 +29,7 @@ spring:
 app:
   upload-dir: uploads/images/
   payment-api:
-    url: http://localhost:8080
+    url: http://${PAYMENT_SERVICE_HOST}:${PAYMENT_SERVICE_PORT}
   init:
     enabled: true
 
