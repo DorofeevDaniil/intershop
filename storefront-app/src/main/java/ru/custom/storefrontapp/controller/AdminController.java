@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-import ru.custom.storefrontapp.model.Item;
+import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
 import java.math.BigDecimal;
@@ -43,7 +43,7 @@ public class AdminController {
                 String description = tuple.getT3();
                 FilePart image = tuple.getT4();
 
-                Item item = new Item();
+                ItemDto item = new ItemDto();
 
                 item.setTitle(title);
                 item.setPrice(price);

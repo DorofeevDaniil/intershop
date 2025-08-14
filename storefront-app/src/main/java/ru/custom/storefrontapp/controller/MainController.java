@@ -40,7 +40,7 @@ public class MainController {
     }
 
     @PostMapping("/{id}")
-    public Mono<String> handleChangeAmount(
+    public Mono<String> handleChangeQuantity(
         @PathVariable("id") Long id,
         @RequestHeader(value = "referer", required = false) final String referer,
         ServerWebExchange exchange
@@ -52,7 +52,7 @@ public class MainController {
                 return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
             }
 
-            return storeFrontService.changeItemAmount(id, action)
+            return storeFrontService.changeItemQuantity(id, action)
                 .then(Mono.fromSupplier(() -> {
                     if (referer == null) {
                         return "redirect:/main/items";

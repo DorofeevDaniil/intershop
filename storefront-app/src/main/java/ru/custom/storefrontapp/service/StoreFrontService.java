@@ -6,7 +6,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.custom.storefrontapp.dto.CartDto;
 import ru.custom.storefrontapp.dto.ItemDto;
-import ru.custom.storefrontapp.model.Item;
 import ru.custom.storefrontapp.pagination.PagedResult;
 
 import java.math.BigDecimal;
@@ -26,7 +25,7 @@ public class StoreFrontService {
     public Mono<ItemDto> getItem(Long id) {
         return itemService.getItemCardById(id)
             .flatMap(item ->
-                cartService.getItemAmount(id)
+                cartService.getItemQuantity(id)
                     .map(count -> {
                         item.setCount(count);
                         return item;
@@ -34,8 +33,8 @@ public class StoreFrontService {
             );
     }
 
-    public Mono<Boolean> changeItemAmount(Long id, String action) {
-        return cartService.changeAmount(id, action);
+    public Mono<Boolean> changeItemQuantity(Long id, String action) {
+        return cartService.changeQuantity(id, action);
     }
 
     public Mono<PagedResult<List<ItemDto>>> getPage(int page, int pageSize, String sort, String searchText) {
@@ -46,7 +45,7 @@ public class StoreFrontService {
 
                 return Flux.fromIterable(items)
                     .flatMap(item ->
-                        cartService.getItemAmount(item.getId())
+                        cartService.getItemQuantity(item.getId())
                             .defaultIfEmpty(0)
                             .map(count -> {
                                 item.setCount(count);
@@ -58,7 +57,7 @@ public class StoreFrontService {
             });
     }
 
-    public Mono<ItemDto> createItem(Item item, FilePart image) {
+    public Mono<ItemDto> createItem(ItemDto item, FilePart image) {
         return itemService.addItem(item, image);
     }
 

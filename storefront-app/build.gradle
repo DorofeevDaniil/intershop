@@ -36,6 +36,14 @@ dependencies {
     testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'com.vaadin.external.google', module: 'android-json'
+    }
+
+    testImplementation('com.github.codemonstur:embedded-redis:1.4.3') {
+        exclude group: 'org.json', module: 'json'
+    }
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly "io.r2dbc:r2dbc-h2"
 }

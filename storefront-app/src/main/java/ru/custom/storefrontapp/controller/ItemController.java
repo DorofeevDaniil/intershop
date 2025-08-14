@@ -31,7 +31,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public Mono<String> handleChangeAmount(
+    public Mono<String> handleChangeQuantity(
         @PathVariable("id") Long id,
         ServerWebExchange exchange
     ) {
@@ -43,7 +43,7 @@ public class ItemController {
                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
                 }
 
-                return storeFrontService.changeItemAmount(id, action)
+                return storeFrontService.changeItemQuantity(id, action)
                             .thenReturn( "redirect:/items/" + id);
             });
     }

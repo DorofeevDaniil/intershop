@@ -40,7 +40,7 @@ public class RedisCartCacheRepository implements CartCacheRepository {
     }
 
     @Override
-    public Mono<Long> updateItemAmount(String id, Integer increment) {
+    public Mono<Long> updateItemQuantity(String id, Integer increment) {
         return reactiveRedisTemplate.opsForHash()
             .increment(CART_KEY, id, increment)
             .flatMap(amount ->

@@ -13,8 +13,8 @@ import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.dto.ItemListDto;
 import ru.custom.storefrontapp.mapper.ItemMapper;
 import ru.custom.storefrontapp.model.Item;
+import ru.custom.storefrontapp.repository.ItemCacheRepository;
 import ru.custom.storefrontapp.repository.ItemRepository;
-import ru.custom.storefrontapp.repository.RedisItemCacheRepository;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -28,17 +28,17 @@ import java.util.stream.Stream;
 public class ItemService {
     @Value("${app.upload-dir}")
     private String relativePath;
-    private RedisItemCacheRepository itemCacheRepository;
+    private ItemCacheRepository itemCacheRepository;
     private final ItemRepository itemRepository;
 
-    public ItemService(RedisItemCacheRepository itemCacheRepository, ItemRepository itemRepository) {
+    public ItemService(ItemCacheRepository itemCacheRepository, ItemRepository itemRepository) {
         this.itemCacheRepository = itemCacheRepository;
         this.itemRepository = itemRepository;
     }
 
     public Mono<ItemDto> getItemCardById(Long id) {
         return itemCacheRepository.findById(id)
-            .switchIfEmpty(loadItemCardFromDbAndCache(id));
+            .switchIfEmpty(Mono.defer(() -> loadItemCardFromDbAndCache(id)));
     }
 
     private Mono<ItemDto> loadItemCardFromDbAndCache(Long id) {
@@ -50,7 +50,7 @@ public class ItemService {
 
     public Mono<List<ItemListDto>> getItemsListCached() {
         return itemCacheRepository.findAll()
-            .switchIfEmpty(loadItemsListFromDbAndCache());
+            .switchIfEmpty(Mono.defer(this::loadItemsListFromDbAndCache));
     }
 
     private Mono<List<ItemListDto>> loadItemsListFromDbAndCache() {
@@ -97,8 +97,8 @@ public class ItemService {
             });
     }
 
-    public Mono<ItemDto> save(Item item) {
-        return saveToDb(item)
+    private Mono<ItemDto> save(ItemDto item) {
+        return saveToDb(ItemMapper.toItem(item))
             .flatMap(saved -> {
                 ItemDto cardDto = ItemMapper.toItemDto(saved);
 
@@ -116,7 +116,7 @@ public class ItemService {
         return itemRepository.count();
     }
 
-    public Mono<ItemDto> addItem(Item item, FilePart image) {
+    public Mono<ItemDto> addItem(ItemDto item, FilePart image) {
         Path uploadDir = Paths.get(relativePath).toAbsolutePath();
         Path fullPath = uploadDir.resolve(image.filename());
 
@@ -133,7 +133,7 @@ public class ItemService {
             });
     }
 
-    public Mono<Boolean> evictListCache() {
+    private Mono<Boolean> evictListCache() {
         return itemCacheRepository.deleteList()
             .map(deletedCount -> deletedCount > 0);
     }
