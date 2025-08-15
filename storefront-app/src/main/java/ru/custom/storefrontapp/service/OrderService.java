@@ -6,7 +6,9 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.custom.paymentservice.domain.PaymentDto;
+import ru.custom.storefrontapp.dto.CartDto;
 import ru.custom.storefrontapp.dto.OrderDto;
+import ru.custom.storefrontapp.mapper.CartMapper;
 import ru.custom.storefrontapp.model.Cart;
 import ru.custom.storefrontapp.model.Item;
 import ru.custom.storefrontapp.model.Order;
@@ -42,7 +44,7 @@ public class OrderService {
         this.txOperator = TransactionalOperator.create(txManager);
     }
 
-    public Mono<Long> createOrder(Cart cart) {
+    public Mono<Long> createOrder(CartDto cart) {
         return Mono.defer(() -> {
             PaymentDto paymentDto = new PaymentDto();
             paymentDto.setAmount(cart.getTotal().doubleValue());
@@ -51,7 +53,7 @@ public class OrderService {
                 .then(
                     orderRepository.save(new Order())
                         .flatMap(savedOrder ->
-                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), cart))
+                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), CartMapper.toCart(cart)))
                                 .then(cleanCartItems())
                                 .thenReturn(savedOrder.getId())
                         )

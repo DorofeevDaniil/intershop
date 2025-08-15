@@ -1,13 +1,11 @@
 package ru.custom.storefrontapp.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import ru.custom.paymentservice.ApiClient;
 import ru.custom.paymentservice.api.DefaultApi;
 import ru.custom.paymentservice.domain.PaymentDto;
 
@@ -19,16 +17,14 @@ import java.time.Duration;
 public class PaymentService {
     private final DefaultApi paymentApi;
 
-    public PaymentService(WebClient.Builder webClientBuilder, @Value("${app.payment-api.url}") String apiUrl) {
-        ApiClient client = new ApiClient(webClientBuilder.build());
-        client.setBasePath(apiUrl);
-
-        this.paymentApi = new DefaultApi(client);
+    public PaymentService(DefaultApi paymentApi) {
+        this.paymentApi = paymentApi;
     }
 
     public Mono<BigDecimal> getBalance() {
         return paymentApi.apiBalanceGet()
-            .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance()));
+            .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance()))
+            .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO);
     }
 
     public Mono<Void> postPayment(PaymentDto paymentDto) {

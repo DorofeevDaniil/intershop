@@ -24,6 +24,8 @@ spring:
 app:
   init:
     enabled: false
+  payment-api:
+    url: http://localhost:8081
 
 logging:
   file:

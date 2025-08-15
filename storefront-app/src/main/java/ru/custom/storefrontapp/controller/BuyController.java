@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
-import ru.custom.storefrontapp.mapper.CartMapper;
 import ru.custom.storefrontapp.service.OrderService;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
@@ -26,7 +25,7 @@ public class BuyController {
             .flatMap(cart -> {
                 if (cart == null || cart.isEmpty()) return Mono.just("redirect:/cart/items");
 
-                return orderService.createOrder(CartMapper.toCart(cart))
+                return orderService.createOrder(cart)
                     .map(id -> "redirect:/orders/" + id + "?newOrder=true");
             });
     }

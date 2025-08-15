@@ -1,10 +1,12 @@
 package ru.custom.storefrontapp.pagination;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
 import java.util.List;
 
+@Data
 @AllArgsConstructor
 public class PagedResult<T> {
     @Getter
