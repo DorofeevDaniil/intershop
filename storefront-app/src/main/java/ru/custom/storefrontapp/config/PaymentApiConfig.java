@@ -9,7 +9,6 @@ import ru.custom.storefrontapp.api.DefaultApi;
 
 @Configuration
 public class PaymentApiConfig {
-
     @Bean
     public DefaultApi paymentApi(WebClient.Builder webClientBuilder,
                                  @Value("${app.payment-api.url}") String apiUrl) {
