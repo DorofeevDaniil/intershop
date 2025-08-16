@@ -10,7 +10,7 @@ import org.springframework.transaction.ReactiveTransactionManager;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import ru.custom.paymentservice.domain.PaymentDto;
+import ru.custom.storefrontapp.domain.PaymentDto;
 import ru.custom.storefrontapp.dto.CartDto;
 import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.dto.OrderDto;

@@ -6,8 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockReset;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Mono;
-import ru.custom.paymentservice.api.DefaultApi;
-import ru.custom.paymentservice.domain.BalanceDto;
+import ru.custom.storefrontapp.api.DefaultApi;
+import ru.custom.storefrontapp.domain.BalanceDto;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
 import static org.assertj.core.api.Assertions.assertThat;

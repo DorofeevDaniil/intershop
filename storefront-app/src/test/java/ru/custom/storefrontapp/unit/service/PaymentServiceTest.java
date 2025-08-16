@@ -11,9 +11,9 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import ru.custom.paymentservice.api.DefaultApi;
-import ru.custom.paymentservice.domain.BalanceDto;
-import ru.custom.paymentservice.domain.PaymentDto;
+import ru.custom.storefrontapp.api.DefaultApi;
+import ru.custom.storefrontapp.domain.BalanceDto;
+import ru.custom.storefrontapp.domain.PaymentDto;
 import ru.custom.storefrontapp.service.PaymentService;
 
 import java.math.BigDecimal;

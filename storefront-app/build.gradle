@@ -61,9 +61,9 @@ tasks.register('buildClient', GenerateTask) {
     inputSpec.set("$projectDir/src/main/resources/api-spec.yaml")
     outputDir.set("$projectDir/build/generated")
     ignoreFileOverride.set(".openapi-generator-java-sources.ignore")
-    modelPackage.set("ru.custom.paymentservice.domain")
-    invokerPackage.set("ru.custom.paymentservice")
-    apiPackage.set("ru.custom.paymentservice.api")
+    modelPackage.set("ru.custom.storefrontapp.domain")
+    invokerPackage.set("ru.custom.storefrontapp")
+    apiPackage.set("ru.custom.storefrontapp.api")
     configOptions.set([
             hideGenerationTimestamp: "true",
             library                : "webclient",

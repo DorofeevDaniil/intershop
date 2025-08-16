@@ -7,9 +7,9 @@ import org.springframework.test.context.bean.override.mockito.MockReset;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import ru.custom.paymentservice.api.DefaultApi;
+import ru.custom.storefrontapp.api.DefaultApi;
 
-import ru.custom.paymentservice.domain.PaymentDto;
+import ru.custom.storefrontapp.domain.PaymentDto;
 import ru.custom.storefrontapp.service.OrderService;
 import ru.custom.storefrontapp.service.StoreFrontService;
 

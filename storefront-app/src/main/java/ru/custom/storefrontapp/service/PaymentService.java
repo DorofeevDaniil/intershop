@@ -6,8 +6,8 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import ru.custom.paymentservice.api.DefaultApi;
-import ru.custom.paymentservice.domain.PaymentDto;
+import ru.custom.storefrontapp.api.DefaultApi;
+import ru.custom.storefrontapp.domain.PaymentDto;
 
 import java.math.BigDecimal;
 import java.time.Duration;
