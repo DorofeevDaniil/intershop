@@ -3,7 +3,6 @@ package ru.custom.storefrontapp.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 import ru.custom.storefrontapp.service.OrderService;
 import ru.custom.storefrontapp.service.StoreFrontService;
@@ -20,7 +19,7 @@ public class BuyController {
     }
 
     @PostMapping
-    public Mono<String> handleBuyItems(WebSession session) {
+    public Mono<String> handleBuyItems() {
         return storeFrontService.getCart()
             .flatMap(cart -> {
                 if (cart == null || cart.isEmpty()) return Mono.just("redirect:/cart/items");

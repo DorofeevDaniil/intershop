@@ -1,42 +1,51 @@
-package ru.custom.storefrontapp.integration.controller;
+package ru.custom.storefrontapp.integration.repository;
 
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
+import org.springframework.data.redis.core.ReactiveHashOperations;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.custom.storefrontapp.configuration.EmbeddedRedisConfiguration;
+import ru.custom.storefrontapp.dto.ItemDto;
+import ru.custom.storefrontapp.repository.CartCacheRepository;
+import ru.custom.storefrontapp.repository.ItemCacheRepository;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 
+@SpringBootTest
 @ActiveProfiles({"test", "redis-test"})
 @Import(EmbeddedRedisConfiguration.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
-@Sql(
-    scripts = "/sql/reset-db.sql",
-    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-)
-@Sql(
-    scripts = "/sql/seed-db.sql",
-    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-)
-abstract class BaseControllerTest {
+abstract class BaseCacheRepository {
     @Autowired
-    protected WebTestClient webTestClient;
+    protected CartCacheRepository cartCacheRepository;
+
+    @Autowired
+    protected ItemCacheRepository itemCacheRepository;
+
+    @Autowired
+    protected ReactiveRedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    protected ReactiveRedisTemplate<String, ItemDto> itemDtoRedisTemplate;
+    protected ReactiveHashOperations<String, Object, Object> hashOps;
     @TempDir
     static Path tempDir;
-    protected static final String TEST_FILE_NAME = "test-image.jpg";
-    protected static final String TEST_FILE_CONTENT = "test file content";
-    protected static final MediaType TEST_RESPONSE_MEDIA_TYPE = MediaType.TEXT_HTML;
-    protected static final MediaType TEST_FILE_CONTENT_TYPE = MediaType.MULTIPART_FORM_DATA;
+
+    protected static final Long TEST_ID = 1L;
+    protected static final String TEST_TITLE = "test title";
+    protected static final String TEST_DESCRIPTION = "test description";
+    protected static final BigDecimal TEST_PRICE = BigDecimal.valueOf(100);
+    protected static final String TEST_IMG_PATH = "/test/path.png";
+
+    protected static final String TEST_FIRST_ID = "1";
+    protected static final String TEST_FIRST_COUNT = "2";
+    protected static final String TEST_SECOND_ID = "2";
+    protected static final String TEST_SECOND_COUNT = "5";
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {

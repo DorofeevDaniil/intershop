@@ -33,7 +33,7 @@ dependencies {
 
     testImplementation 'org.jsoup:jsoup:1.17.2'
     testImplementation 'io.projectreactor:reactor-test'
-    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+    testImplementation 'it.ozimov:embedded-redis:0.7.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
@@ -42,6 +42,14 @@ dependencies {
 
     testImplementation('com.github.codemonstur:embedded-redis:1.4.3') {
         exclude group: 'org.json', module: 'json'
+    }
+
+    testImplementation('it.ozimov:embedded-redis:0.7.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+
+    implementation('org.springframework.boot:spring-boot-starter-logging') {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

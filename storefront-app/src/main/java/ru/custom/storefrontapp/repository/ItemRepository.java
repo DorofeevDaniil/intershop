@@ -10,8 +10,6 @@ import ru.custom.storefrontapp.model.Item;
 @Repository
 public interface ItemRepository extends R2dbcRepository<Item, Long> {
     Flux<Item> findAllByOrderByIdAsc(Pageable pageRequest);
-    Flux<Item> findAllByOrderByTitleAsc(Pageable pageable);
-    Flux<Item> findAllByOrderByPriceAsc(Pageable pageable);
     Flux<Item> findAllByCountGreaterThan(Integer cnt);
     Flux<Item> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description, Pageable pageable);
     Mono<Long> countByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
