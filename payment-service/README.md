@@ -1,5 +1,5 @@
 # Приложение payment-service
-## Версия: v2.0
+## Версия: v3.0
 Модуль, разработанный в рамках проектной рабты представляет из себя Сервис платежей.
 Приложение предоставляет возможность получения фиатного баланса и проведения платежа.
 
@@ -14,17 +14,17 @@
 ## Запуск
 ### Unix-подобные системы
 #### Запуск
-Выполнить команду `./build/libs/payment-service-v2.0.jar start`
+Выполнить команду `./build/libs/payment-service-v3.0.jar start`
 
 #### Остановка
-Выполнить команду `./build/libs/payment-service-v2.0.jar stop`
+Выполнить команду `./build/libs/payment-service-v3.0.jar stop`
 
 ### Windows
 #### Запуск
 Выполнить команду `./build/libs/start.bat start.bat`
 
 > [!WARNING]
-> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/payment-service-v2.0.jar`,
+> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/payment-service-v3.0.jar`,
 > Однако остановка будет возможна только последовательным выполнением команд
 > 1. `jps -lv | findstr /i payment-service`
 > 2. `taskkill /PID <PID> /f`

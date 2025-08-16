@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
 	group = 'ru.custom'
-	version = 'v2.0'
+	version = 'v3.0'
 	repositories {
 		mavenCentral()
 	}
