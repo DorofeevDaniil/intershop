@@ -1,14 +1,13 @@
 package ru.custom.storefrontapp.unit.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockReset;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -23,6 +22,7 @@ import ru.custom.storefrontapp.repository.ItemRepository;
 import ru.custom.storefrontapp.service.ItemService;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -30,23 +30,26 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = ItemService.class)
+@ExtendWith(MockitoExtension.class)
 class ItemServiceTest extends BaseServiceTest {
-    @MockitoBean(reset = MockReset.BEFORE)
+    @Mock
     private ItemRepository itemRepository;
-
-    @MockitoBean(reset = MockReset.BEFORE)
+    @Mock
     private ItemCacheRepository itemCacheRepository;
-
-    @Autowired
+    @InjectMocks
     private ItemService itemService;
 
     @TempDir
     static Path tempDir;
 
-    @DynamicPropertySource
-    static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("app.upload-dir", () -> tempDir.toString());
+    @BeforeEach
+    void setupTest() throws IllegalAccessException, NoSuchFieldException {
+        itemService = new ItemService(itemCacheRepository, itemRepository);
+
+        // Проставляем путь вручную, чтобы юнит-тест работал
+        Field field = ItemService.class.getDeclaredField("relativePath");
+        field.setAccessible(true);
+        field.set(itemService, tempDir.toString());
     }
 
     @Test

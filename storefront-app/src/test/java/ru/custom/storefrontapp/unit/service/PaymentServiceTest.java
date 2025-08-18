@@ -1,12 +1,12 @@
 package ru.custom.storefrontapp.unit.service;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.test.context.bean.override.mockito.MockReset;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -21,12 +21,11 @@ import java.net.URI;
 
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = PaymentService.class)
-class PaymentServiceTest extends BaseServiceTest {
-    @MockitoBean(reset = MockReset.BEFORE)
+@ExtendWith(MockitoExtension.class)
+class PaymentServiceTest {
+    @Mock
     private DefaultApi paymentApi;
-
-    @Autowired
+    @InjectMocks
     private PaymentService paymentService;
 
     @Test

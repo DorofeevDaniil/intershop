@@ -1,8 +1,8 @@
 package ru.custom.storefrontapp.unit.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.ReactiveTransaction;
@@ -47,19 +47,8 @@ class OrderServiceTest extends BaseServiceTest {
     @Mock
     private ReactiveTransactionManager transactionManager;
 
+    @InjectMocks
     private OrderService orderService;
-
-    @BeforeEach
-    void setUp() {
-        orderService = new OrderService(
-            orderRepository,
-            orderItemRepository,
-            cartService,
-            itemService,
-            paymentService,
-            transactionManager
-        );
-    }
 
     @Test
     void getOrderById_shouldReturnOrder() {

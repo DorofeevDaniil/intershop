@@ -2,10 +2,10 @@ package ru.custom.storefrontapp.unit.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockReset;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -18,12 +18,12 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = CartService.class)
+@ExtendWith(MockitoExtension.class)
 class CartServiceTest extends BaseServiceTest {
-    @MockitoBean(reset = MockReset.BEFORE)
+    @Mock
     private RedisCartCacheRepository cartCacheRepository;
 
-    @Autowired
+    @InjectMocks
     private CartService cartService;
 
     @Test

@@ -2,11 +2,11 @@ package ru.custom.storefrontapp.unit.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.test.context.bean.override.mockito.MockReset;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -30,15 +30,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = StoreFrontService.class)
+@ExtendWith(MockitoExtension.class)
 class StoreFrontServiceTest extends BaseServiceTest {
-    @MockitoBean(reset = MockReset.BEFORE)
+    @Mock
     private ItemService itemService;
-
-    @MockitoBean(reset = MockReset.BEFORE)
+    @Mock
     private CartService cartService;
-
-    @Autowired
+    @InjectMocks
     private StoreFrontService storeFrontService;
 
     @Test

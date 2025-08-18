@@ -28,39 +28,22 @@ subprojects {
 }
 
 tasks.register('generateReadme') {
-	def versionName = project.version
-	def appName = project.name
-	def jarName = "${project.name}-${version}.jar"
+	def templateFile = file("$projectDir/scripts/README-template.md")
+	def outputFile = file("$projectDir/README.md")
 
-	doLast {
-		def readmeContent = """# Приложение ${appName}
-## Версия: ${versionName}
-Приложение представляет из себя полукастомный полумагазин, разработанный в рамках проектной рабты.
-Приложение предоставляет возможность просмотра товаров, формирования корзины, оформления заказ, а также загрузки новых товаров из условного интерфейса администратора.
-
-Приложение состоит из двух модулей - Витрина интернет-магазина и Сервис платежей. Дополнительная информация о модулях указана в соответствующих README.md файлах.
-
-## Генерация README.md модулей
-Для генерации README.md необходимо выполнить команду `./gradlew generateReadme`
-
-## Сборка
-Для сбоки необходимо в корне проекта выполнить команду    `./gradlew clean bootJar`
-
-После этого jar-файлы будут собраны и расположены по пути `./<MODULE_NAME>/build/libs`
-
-## Запуск
-В дирректории проекта выполнить команду `docker-compose up`
-> [!NOTE]
->После запуска приложение будет доступно по адресу http://localhost:9191/intershop
-
-## Остановка
-В дирректории проекта выполнить команду `docker-compose stop`
-
-### Тестирование
-Для запуска тестов необходимо выполнить команду `./gradlew test`
-
-## Загрузка товаров
-Для загрузки новых товаров в базу необходимо перейти по ссылке http://localhost:9191/intershop/admin"""
-		file("README.md").text = readmeContent
+	if (!templateFile.exists()) {
+		throw new GradleException("Template file not found: ${templateFile}")
 	}
+
+	def templateText = templateFile.text
+
+	def readmeContent = templateText
+			.replace('${APP_NAME}', project.name)
+			.replace('${VERSION}', project.version.toString())
+
+	outputFile.withWriter('UTF-8') { writer ->
+		writer.write(readmeContent)
+	}
+
+	println "README.md generated at ${outputFile}"
 }

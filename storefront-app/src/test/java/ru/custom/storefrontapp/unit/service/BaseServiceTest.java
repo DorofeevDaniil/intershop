@@ -13,8 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 abstract class BaseServiceTest {
     protected static final Long TEST_ID = 1L;
@@ -50,13 +49,13 @@ abstract class BaseServiceTest {
     protected FilePart populateFilePart() {
         FilePart filePart = mock(FilePart.class);
 
-        when(filePart.filename()).thenReturn(TEST_FILE_NAME);
+        lenient().when(filePart.filename()).thenReturn(TEST_FILE_NAME);
 
         DataBuffer buffer = new DefaultDataBufferFactory().wrap(TEST_FILE_CONTENT.getBytes());
         Flux<DataBuffer> content = Flux.just(buffer);
-        when(filePart.content()).thenReturn(content);
+        lenient().when(filePart.content()).thenReturn(content);
 
-        when(filePart.transferTo(any(Path.class))).thenAnswer(invocation -> {
+        lenient().when(filePart.transferTo(any(Path.class))).thenAnswer(invocation -> {
             Path path = invocation.getArgument(0);
             return Mono.fromRunnable(() -> {
                 try {
