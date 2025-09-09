@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import ru.custom.storefrontapp.model.Item;
 import ru.custom.storefrontapp.service.ItemService;
+import ru.custom.storefrontapp.service.UserDetailsService;
+import ru.custom.storefrontapp.service.UserManagementService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -32,6 +35,7 @@ import java.util.Random;
 public class ImageStartupInitializer {
 
     private final ItemService itemService;
+    private UserManagementService userManagementService;
 
     @Value("${app.upload-dir}")
     private String relativePath;
@@ -50,13 +54,22 @@ public class ImageStartupInitializer {
         "washing-machine", "Cтиральная машина Samsung WW11CG604CLBLP, 11 кг, с увеличенным объемом барабана, электронным управлением, инверторным мотором, обработкой паром, системой управления на базе ИИ, черная",
         "ya-remote-controller", "Умный пульт Яндекс с Алисой, черный"
     );
-    public ImageStartupInitializer(ItemService itemService) {
+    private static final Map<String, String> defaultRoleModel = Map.of(
+        "user", "USER",
+        "admin", "ADMIN");
+
+    public ImageStartupInitializer(
+        ItemService itemService,
+        UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
         this.itemService = itemService;
     }
 
     @EventListener(ContextRefreshedEvent.class)
     public void populateItems(ContextRefreshedEvent event) {
-        runItemInitialization().subscribe();
+        runItemInitialization()
+            .then(populateRoleModel())
+            .subscribe();
     }
 
     public Mono<Void> runItemInitialization() {
@@ -87,6 +100,26 @@ public class ImageStartupInitializer {
 
                 return itemService.saveToDb(item);
             });
+    }
+
+    private Mono<Void> populateRoleModel() {
+        return Flux.fromIterable(defaultRoleModel.entrySet())
+            .flatMap(modelSet ->
+                userManagementService.findUserByName(modelSet.getKey())
+                    .switchIfEmpty(userManagementService.saveUser(modelSet.getKey()))
+                    .flatMap(user ->
+                        userManagementService.findRoleByName(modelSet.getValue())
+                            .switchIfEmpty(userManagementService.saveRole(modelSet.getValue()))
+                            .flatMap(role ->
+                                userManagementService.findUserRoleByIds(user.getId(), role.getId())
+                                        .switchIfEmpty(userManagementService.saveUserRole(user.getId(), role.getId()))
+                            )
+                    )
+                    .then(
+
+                    )
+            )
+            .then();
     }
 
     public String getFileText(String textFileName) {
