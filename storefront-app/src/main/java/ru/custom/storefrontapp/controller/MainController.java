@@ -2,6 +2,7 @@ package ru.custom.storefrontapp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -63,5 +64,10 @@ public class MainController {
                     return "redirect:" + referer.substring(referer.indexOf(basePath) + basePath.length());
                 }));
         });
+    }
+
+    @ModelAttribute("_csrf")
+    public Mono<CsrfToken> csrfToken(ServerWebExchange exchange) {
+        return exchange.getAttribute(CsrfToken.class.getName());
     }
 }

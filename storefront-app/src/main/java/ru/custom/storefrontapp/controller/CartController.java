@@ -1,6 +1,7 @@
 package ru.custom.storefrontapp.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -57,5 +58,10 @@ public class CartController {
                 return storeFrontService.changeItemQuantity(id, action)
                     .thenReturn("redirect:/cart/items");
             });
+    }
+
+    @ModelAttribute("_csrf")
+    public Mono<CsrfToken> csrfToken(ServerWebExchange exchange) {
+        return exchange.getAttribute(CsrfToken.class.getName());
     }
 }
