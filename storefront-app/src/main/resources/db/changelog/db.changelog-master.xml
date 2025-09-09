@@ -8,5 +8,8 @@
     <include file="scripts/001-init-item-schema.xml" relativeToChangelogFile="true"/>
     <include file="scripts/002-init-orders-schema.xml" relativeToChangelogFile="true"/>
     <include file="scripts/003-init-order-item-schema.xml" relativeToChangelogFile="true"/>
+    <include file="scripts/004-init-users-schema.xml" relativeToChangelogFile="true"/>
+    <include file="scripts/005-init-roles-schema.xml" relativeToChangelogFile="true"/>
+    <include file="scripts/006-init-user-role-schema.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
