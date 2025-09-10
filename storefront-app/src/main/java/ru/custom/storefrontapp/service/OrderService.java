@@ -22,12 +22,12 @@ import java.util.List;
 
 @Service
 public class OrderService {
-    private OrderRepository orderRepository;
-    private OrderItemRepository orderItemRepository;
-    private CartService cartService;
-    private ItemService itemService;
-    private PaymentService paymentService;
-    private UserManagementService userManagementService;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CartService cartService;
+    private final ItemService itemService;
+    private final PaymentService paymentService;
+    private final UserManagementService userManagementService;
     private final TransactionalOperator txOperator;
 
     public OrderService(

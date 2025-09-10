@@ -12,8 +12,8 @@ import ru.custom.storefrontapp.service.StoreFrontService;
 @Controller
 @RequestMapping("/buy")
 public class BuyController {
-    private OrderService orderService;
-    private StoreFrontService storeFrontService;
+    private final OrderService orderService;
+    private final StoreFrontService storeFrontService;
 
     public BuyController(OrderService orderService, StoreFrontService storeFrontService) {
         this.orderService = orderService;

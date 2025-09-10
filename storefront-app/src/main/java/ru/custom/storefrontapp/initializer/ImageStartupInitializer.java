@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import ru.custom.storefrontapp.model.Item;
 import ru.custom.storefrontapp.service.ItemService;
-import ru.custom.storefrontapp.service.UserDetailsService;
 import ru.custom.storefrontapp.service.UserManagementService;
 
 import java.io.BufferedReader;

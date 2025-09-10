@@ -28,7 +28,7 @@ public class MainController {
         @RequestParam(name = "pageNumber", defaultValue = "1") int page,
         @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(name = "search", required = false) String search,
-        @RequestParam(name = "sort", required = true, defaultValue = "NO") String sort,
+        @RequestParam(name = "sort", defaultValue = "NO") String sort,
         @AuthenticationPrincipal Authentication authentication,
         Model model
     ) {

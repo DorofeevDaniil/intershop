@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Controller
 @RequestMapping("/cart")
 public class CartController {
-    private StoreFrontService storeFrontService;
+    private final StoreFrontService storeFrontService;
     private final PaymentService paymentService;
 
     public CartController(StoreFrontService storeFrontService, PaymentService paymentService) {
@@ -30,7 +30,6 @@ public class CartController {
 
     @GetMapping("/items")
     public Mono<String> handleShowItems(
-            WebSession session,
             Model model,
             @AuthenticationPrincipal UserDetails userDetails) {
         return storeFrontService.getCart(userDetails.getUsername())
