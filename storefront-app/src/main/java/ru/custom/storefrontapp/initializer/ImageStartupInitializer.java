@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -34,12 +33,12 @@ import java.util.Random;
 public class ImageStartupInitializer {
 
     private final ItemService itemService;
-    private UserManagementService userManagementService;
+    private final UserManagementService userManagementService;
 
     @Value("${app.upload-dir}")
     private String relativePath;
 
-    private Random randomDouble = new Random();
+    private final Random randomDouble = new Random();
 
     private static final Map<String, String> INIT_FILES = Map.of(
         "chicken", "Шапка",
@@ -141,7 +140,7 @@ public class ImageStartupInitializer {
         return builder.toString();
     }
 
-    public String saveImage(String imageFileName) throws IOException {
+    public String saveImage(String imageFileName) {
         String initImageFullName = imageFileName + "-demo.jpg";
         Path uploadDir = Paths.get(relativePath).toAbsolutePath();
 
