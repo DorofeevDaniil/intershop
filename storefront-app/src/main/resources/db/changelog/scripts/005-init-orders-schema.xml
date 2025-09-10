@@ -17,6 +17,9 @@
             <column name="id" type="bigserial">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user" references="users(id)"/>
+            </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>
