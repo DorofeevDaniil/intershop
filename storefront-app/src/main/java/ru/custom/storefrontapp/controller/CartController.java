@@ -1,6 +1,8 @@
 package ru.custom.storefrontapp.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +29,11 @@ public class CartController {
 
 
     @GetMapping("/items")
-    public Mono<String> handleShowItems(WebSession session, Model model) {
-        return storeFrontService.getCart()
+    public Mono<String> handleShowItems(
+            WebSession session,
+            Model model,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return storeFrontService.getCart(userDetails.getUsername())
             .flatMap(cartDto -> {
                 model.addAttribute("items", cartDto.getItems());
                 model.addAttribute("total", cartDto.getTotal());
@@ -45,7 +50,8 @@ public class CartController {
     @PostMapping("/items/{id}")
     public Mono<String> handleChangeQuantity (
         @PathVariable("id") Long id,
-        ServerWebExchange exchange
+        ServerWebExchange exchange,
+        @AuthenticationPrincipal UserDetails userDetails
     ) {
         return exchange.getFormData()
             .flatMap(data -> {
@@ -55,7 +61,7 @@ public class CartController {
                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
                 }
 
-                return storeFrontService.changeItemQuantity(id, action)
+                return storeFrontService.changeItemQuantity(id, action, userDetails.getUsername())
                     .thenReturn("redirect:/cart/items");
             });
     }

@@ -19,38 +19,42 @@ public class RedisCartCacheRepository implements CartCacheRepository {
         this.reactiveRedisTemplate = redisTemplate;
     }
 
-    @Override
-    public Flux<Map.Entry<Object, Object>> findAll() {
-        return reactiveRedisTemplate.opsForHash()
-            .entries(CART_KEY);
+    private String getCartKey(Long userId) {
+        return CART_KEY + ":" + userId;
     }
 
     @Override
-    public Mono<Integer> findById(String id) {
+    public Flux<Map.Entry<Object, Object>> findAll(Long userId) {
         return reactiveRedisTemplate.opsForHash()
-            .get(CART_KEY, id)
+            .entries(getCartKey(userId));
+    }
+
+    @Override
+    public Mono<Integer> findById(String id, Long userId) {
+        return reactiveRedisTemplate.opsForHash()
+            .get(getCartKey(userId), id)
             .map(count -> Integer.valueOf(count.toString()))
             .defaultIfEmpty(0);
     }
 
     @Override
-    public Mono<Long> deleteItem(String id) {
+    public Mono<Long> deleteItem(String id, Long userId) {
         return reactiveRedisTemplate.opsForHash()
-            .remove(CART_KEY, id);
+            .remove(getCartKey(userId), id);
     }
 
     @Override
-    public Mono<Long> updateItemQuantity(String id, Integer increment) {
+    public Mono<Long> updateItemQuantity(String id, Integer increment, Long userId) {
         return reactiveRedisTemplate.opsForHash()
-            .increment(CART_KEY, id, increment)
+            .increment(getCartKey(userId), id, increment)
             .flatMap(amount ->
-                reactiveRedisTemplate.expire(CART_KEY, TTL)
+                reactiveRedisTemplate.expire(getCartKey(userId), TTL)
                     .thenReturn(amount)
             );
     }
 
     @Override
-    public Mono<Long> deleteCart() {
-        return reactiveRedisTemplate.delete(CART_KEY);
+    public Mono<Long> deleteCart(Long userId) {
+        return reactiveRedisTemplate.delete(getCartKey(userId));
     }
 }

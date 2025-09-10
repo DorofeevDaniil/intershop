@@ -1,5 +1,7 @@
 package ru.custom.storefrontapp.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +22,8 @@ public class OrderController {
      }
 
     @GetMapping
-    public Mono<String> handleShowOrders(Model model) {
-        return orderService.getAllOrders()
+    public Mono<String> handleShowOrders(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        return orderService.getAllOrders(userDetails.getUsername())
             .collectList()
             .map(orders -> {
                 model.addAttribute("orders", orders);

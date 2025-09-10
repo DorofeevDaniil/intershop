@@ -1,6 +1,7 @@
 package ru.custom.storefrontapp.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -21,12 +22,14 @@ public class PaymentService {
         this.paymentApi = paymentApi;
     }
 
+    @PreAuthorize("hasRole('USER')")
     public Mono<BigDecimal> getBalance() {
         return paymentApi.apiBalanceGet()
             .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance()))
             .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO);
     }
 
+    @PreAuthorize("hasRole('USER')")
     public Mono<Void> postPayment(PaymentDto paymentDto) {
         return paymentApi.apiPaymentPost(paymentDto)
             .retryWhen(

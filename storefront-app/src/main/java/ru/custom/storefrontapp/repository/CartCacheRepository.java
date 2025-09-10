@@ -6,9 +6,9 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 public interface CartCacheRepository {
-    Flux<Map.Entry<Object, Object>> findAll();
-    Mono<Long> updateItemQuantity(String id, Integer increment);
-    Mono<Integer> findById(String id);
-    Mono<Long> deleteItem(String id);
-    Mono<Long> deleteCart();
+    Flux<Map.Entry<Object, Object>> findAll(Long userId);
+    Mono<Long> updateItemQuantity(String id, Integer increment, Long userId);
+    Mono<Integer> findById(String id, Long userId);
+    Mono<Long> deleteItem(String id, Long userId);
+    Mono<Long> deleteCart(Long userId);
 }

@@ -3,6 +3,7 @@ package ru.custom.storefrontapp.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +14,7 @@ import java.net.URI;
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
 public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -24,7 +26,7 @@ public class SecurityConfig {
                 .anyExchange().permitAll()
             )
             .anonymous(anonymous -> anonymous
-                .principal("guestUser")
+                .principal("anonymousUser")
             )
             .formLogin(form -> form
                 .loginPage("/login")

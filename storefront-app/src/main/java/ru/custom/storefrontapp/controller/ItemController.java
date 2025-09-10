@@ -1,6 +1,8 @@
 package ru.custom.storefrontapp.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,9 +24,10 @@ public class ItemController {
     @GetMapping
     public Mono<String> handleShowItem(
         @PathVariable("id") Long id,
-        Model model
+        Model model,
+        @AuthenticationPrincipal Authentication authentication
     ) {
-        return storeFrontService.getItem(id)
+        return storeFrontService.getItem(id, authentication)
             .map(item -> {
                 model.addAttribute("item", item);
                 return "item";
@@ -34,7 +37,8 @@ public class ItemController {
     @PostMapping
     public Mono<String> handleChangeQuantity(
         @PathVariable("id") Long id,
-        ServerWebExchange exchange
+        ServerWebExchange exchange,
+        @AuthenticationPrincipal Authentication authentication
     ) {
         return exchange.getFormData()
             .flatMap(data -> {
@@ -44,7 +48,7 @@ public class ItemController {
                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
                 }
 
-                return storeFrontService.changeItemQuantity(id, action)
+                return storeFrontService.changeItemQuantity(id, action, authentication.getName())
                             .thenReturn( "redirect:/items/" + id);
             });
     }

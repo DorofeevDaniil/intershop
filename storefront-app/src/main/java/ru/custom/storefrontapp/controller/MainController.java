@@ -2,6 +2,8 @@ package ru.custom.storefrontapp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,24 +29,26 @@ public class MainController {
         @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(name = "search", required = false) String search,
         @RequestParam(name = "sort", required = true, defaultValue = "NO") String sort,
+        @AuthenticationPrincipal Authentication authentication,
         Model model
     ) {
-        return storeFrontService.getPage(page, pageSize, sort, search)
-            .map(pagedResult -> {
-                model.addAttribute("search", search);
-                model.addAttribute("items", pagedResult.getContent());
-                model.addAttribute("sort", sort);
-                model.addAttribute("paging", pagedResult);
+        return storeFrontService.getPage(page, pageSize, sort, search, authentication)
+                .map(pagedResult -> {
+                    model.addAttribute("search", search);
+                    model.addAttribute("items", pagedResult.getContent());
+                    model.addAttribute("sort", sort);
+                    model.addAttribute("paging", pagedResult);
 
-                return "main";
-            });
+                    return "main";
+                });
     }
 
     @PostMapping("/{id}")
     public Mono<String> handleChangeQuantity(
         @PathVariable("id") Long id,
         @RequestHeader(value = "referer", required = false) final String referer,
-        ServerWebExchange exchange
+        ServerWebExchange exchange,
+        @AuthenticationPrincipal Authentication authentication
     ) {
         return exchange.getFormData().flatMap(data -> {
             String action = data.getFirst("action");
@@ -53,7 +57,7 @@ public class MainController {
                 return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing form field 'action'"));
             }
 
-            return storeFrontService.changeItemQuantity(id, action)
+            return storeFrontService.changeItemQuantity(id, action, authentication.getName())
                 .then(Mono.fromSupplier(() -> {
                     if (referer == null) {
                         return "redirect:/main/items";

@@ -1,5 +1,6 @@
 package ru.custom.storefrontapp.service;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -26,6 +27,7 @@ public class OrderService {
     private CartService cartService;
     private ItemService itemService;
     private PaymentService paymentService;
+    private UserManagementService userManagementService;
     private final TransactionalOperator txOperator;
 
     public OrderService(
@@ -34,6 +36,7 @@ public class OrderService {
         CartService cartService,
         ItemService itemService,
         PaymentService paymentService,
+        UserManagementService userManagementService,
         ReactiveTransactionManager txManager
     ) {
         this.orderRepository = orderRepository;
@@ -41,26 +44,35 @@ public class OrderService {
         this.cartService = cartService;
         this.itemService = itemService;
         this.paymentService = paymentService;
+        this.userManagementService = userManagementService;
         this.txOperator = TransactionalOperator.create(txManager);
     }
 
-    public Mono<Long> createOrder(CartDto cart) {
+    @PreAuthorize("hasRole('USER')")
+    public Mono<Long> createOrder(CartDto cart, String username) {
         return Mono.defer(() -> {
             PaymentDto paymentDto = new PaymentDto();
             paymentDto.setAmount(cart.getTotal().doubleValue());
 
             return paymentService.postPayment(paymentDto)
                 .then(
-                    orderRepository.save(new Order())
-                        .flatMap(savedOrder ->
-                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), CartMapper.toCart(cart)))
-                                .then(cleanCartItems())
-                                .thenReturn(savedOrder.getId())
-                        )
+                    userManagementService.findUserByName(username)
+                        .flatMap(user -> {
+                            Order order = new Order();
+                            order.setUserId(user.getId());
+
+                            return orderRepository.save(order)
+                                    .flatMap(savedOrder ->
+                                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), CartMapper.toCart(cart)))
+                                                    .then(cleanCartItems(user.getId()))
+                                                    .thenReturn(savedOrder.getId())
+                                    );
+                        })
                 );
         }).as(txOperator::transactional);
     }
 
+    @PreAuthorize("hasRole('USER')")
     public Mono<OrderDto> getOrderById(Long id) {
         return orderItemRepository.findAllByOrderId(id)
             .flatMap(orderItem ->
@@ -80,25 +92,29 @@ public class OrderService {
             });
     }
 
-    public Flux<OrderDto> getAllOrders() {
-        return orderRepository.findAll()
-            .flatMap(order ->
-                orderItemRepository.findAllByOrderId(order.getId())
-                    .flatMap(orderItem ->
-                        itemService.getItemCardById(orderItem.getItemId())
-                            .map(relatedItem -> {
-                                relatedItem.setCount(orderItem.getCount());
-                                return relatedItem;
-                            })
-                    )
-                    .collectList()
-                    .map(items -> {
-                        OrderDto orderDto = new OrderDto();
-                        orderDto.setId(order.getId());
-                        orderDto.setItems(items);
+    @PreAuthorize("hasRole('USER')")
+    public Flux<OrderDto> getAllOrders(String username) {
+        return userManagementService.findUserByName(username)
+            .flatMapMany(user ->
+                    orderRepository.findAllByUserId(user.getId())
+                            .flatMap(order ->
+                                    orderItemRepository.findAllByOrderId(order.getId())
+                                            .flatMap(orderItem ->
+                                                    itemService.getItemCardById(orderItem.getItemId())
+                                                            .map(relatedItem -> {
+                                                                relatedItem.setCount(orderItem.getCount());
+                                                                return relatedItem;
+                                                            })
+                                            )
+                                            .collectList()
+                                            .map(items -> {
+                                                OrderDto orderDto = new OrderDto();
+                                                orderDto.setId(order.getId());
+                                                orderDto.setItems(items);
 
-                        return orderDto;
-                    })
+                                                return orderDto;
+                                            })
+                            )
             );
     }
 
@@ -117,8 +133,8 @@ public class OrderService {
         return orderItems;
     }
 
-    private Mono<Void> cleanCartItems() {
-        return cartService.cleanCart()
+    private Mono<Void> cleanCartItems(Long userId) {
+        return cartService.cleanCart(userId)
             .then();
     }
 }
