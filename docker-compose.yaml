@@ -32,8 +32,6 @@ services:
       - "9192:9192"
     depends_on:
       - keycloak
-    extra_hosts:
-      - "localhost:host-gateway"
 
   web:
     build:
@@ -41,6 +39,7 @@ services:
     ports:
       - "9191:9191"
     depends_on:
+      - keycloak
       - db
       - redis
       - payment-service

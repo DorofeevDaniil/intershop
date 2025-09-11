@@ -47,9 +47,7 @@ public class SecurityConfig {
                         URI.create(exchange.getRequest().getPath().contextPath().value() + "/login?logout"));
                     return exchange.getResponse().setComplete();
                 })
-            )
-
-            .build();
+            ).build();
     }
 
     @Bean
