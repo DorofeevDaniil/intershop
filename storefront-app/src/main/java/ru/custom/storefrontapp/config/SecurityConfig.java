@@ -9,6 +9,8 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
@@ -39,14 +41,17 @@ public class SecurityConfig {
                 })
             )
             .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessHandler((webFilterExchange, authentication) -> {
-                    var exchange = webFilterExchange.getExchange();
-                    exchange.getResponse().setStatusCode(HttpStatus.FOUND);
-                    exchange.getResponse().getHeaders().setLocation(
-                        URI.create(exchange.getRequest().getPath().contextPath().value() + "/login?logout"));
-                    return exchange.getResponse().setComplete();
-                })
+                    .logoutUrl("/logout")
+                    .logoutSuccessHandler((webFilterExchange, authentication) ->
+                            webFilterExchange.getExchange().getSession()
+                                    .flatMap(WebSession::invalidate)
+                                    .then(Mono.fromRunnable(() -> {
+                                        webFilterExchange.getExchange().getResponse().setStatusCode(HttpStatus.FOUND);
+                                        webFilterExchange.getExchange().getResponse().getHeaders().setLocation(
+                                                URI.create(webFilterExchange.getExchange().getRequest().getPath().contextPath().value() + "/login?logout")
+                                        );
+                                    }))
+                    )
             ).build();
     }
 
