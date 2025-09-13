@@ -50,26 +50,30 @@ public class OrderService {
 
     @PreAuthorize("hasRole('USER')")
     public Mono<Long> createOrder(CartDto cart, String username) {
-        return Mono.defer(() -> {
-            PaymentDto paymentDto = new PaymentDto();
-            paymentDto.setAmount(cart.getTotal().doubleValue());
+        return Mono.defer(() -> userManagementService.findUserByName(username)
+                .flatMap(user -> {
+                    PaymentDto paymentDto = new PaymentDto();
+                    paymentDto.setAmount(cart.getTotal().doubleValue());
+                    paymentDto.setUserId(user.getId());
 
-            return paymentService.postPayment(paymentDto)
-                .then(
-                    userManagementService.findUserByName(username)
-                        .flatMap(user -> {
-                            Order order = new Order();
-                            order.setUserId(user.getId());
+                    return paymentService.postPayment(paymentDto)
+                        .then(
+                            Mono.defer(() -> {
+                                Order order = new Order();
+                                order.setUserId(user.getId());
 
-                            return orderRepository.save(order)
+                                return orderRepository.save(order)
                                     .flatMap(savedOrder ->
-                                            orderItemRepository.saveAll(populateOrderItems(savedOrder.getId(), CartMapper.toCart(cart)))
-                                                    .then(cleanCartItems(user.getId()))
-                                                    .thenReturn(savedOrder.getId())
+                                        orderItemRepository.saveAll(
+                                                populateOrderItems(savedOrder.getId(), CartMapper.toCart(cart))
+                                            )
+                                            .then(cleanCartItems(user.getId()))
+                                            .thenReturn(savedOrder.getId())
                                     );
-                        })
-                );
-        }).as(txOperator::transactional);
+                            })
+                        );
+                })
+        ).as(txOperator::transactional);
     }
 
     @PreAuthorize("hasRole('USER')")

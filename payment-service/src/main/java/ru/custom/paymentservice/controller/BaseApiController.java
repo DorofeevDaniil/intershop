@@ -25,8 +25,9 @@ public class BaseApiController implements DefaultApi {
     }
 
     @Override
-    public Mono<ResponseEntity<BalanceDto>> apiBalanceGet(
-        @Parameter(hidden = true) final ServerWebExchange exchange
+    public Mono<ResponseEntity<BalanceDto>> apiBalanceUserIdGet(
+            Long userId,
+            @Parameter(hidden = true) final ServerWebExchange exchange
     ) {
         Mono<Void> result = Mono.empty();
         exchange.getResponse().setStatusCode(HttpStatus.valueOf(200));

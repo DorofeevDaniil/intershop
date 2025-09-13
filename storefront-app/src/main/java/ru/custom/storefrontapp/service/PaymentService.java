@@ -17,16 +17,21 @@ import java.time.Duration;
 @Slf4j
 public class PaymentService {
     private final DefaultApi paymentApi;
+    private final UserManagementService userManagementService;
 
-    public PaymentService(DefaultApi paymentApi) {
+    public PaymentService(DefaultApi paymentApi, UserManagementService userManagementService) {
         this.paymentApi = paymentApi;
+        this.userManagementService = userManagementService;
     }
 
     @PreAuthorize("hasRole('USER')")
-    public Mono<BigDecimal> getBalance() {
-        return paymentApi.apiBalanceGet()
-            .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance()))
-            .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO);
+    public Mono<BigDecimal> getBalance(String username) {
+        return userManagementService.findUserByName(username)
+            .flatMap(user ->
+                paymentApi.apiBalanceUserIdGet(user.getId())
+                    .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance() == null ? 0 : balanceDto.getBalance()))
+                    .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO)
+            );
     }
 
     @PreAuthorize("hasRole('USER')")

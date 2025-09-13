@@ -4,8 +4,10 @@ info:
   description: API сервиса платежей
   version: 1.0.0
 paths:
-  /api/balance:
+  /api/balance/{userId}:
     get:
+      parameters:
+        - $ref: '#/components/parameters/UserId'
       summary: Получить текущий баланс
       responses:
         '200':
@@ -29,6 +31,15 @@ paths:
         '400':
           description: Ошибка при обработке платежа
 components:
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      description: Идентификатор пользователя
+      required: true
+      schema:
+        type: integer
+        format: int64
   schemas:
     BalanceDto:
       type: object
@@ -44,3 +55,6 @@ components:
           type: number
           format: double
           example: 150.00
+        userId:
+          type: integer
+          format: int64
