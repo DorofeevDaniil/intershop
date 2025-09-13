@@ -37,7 +37,7 @@ public class CartController {
                 model.addAttribute("total", cartDto.getTotal());
                 model.addAttribute("empty", cartDto.isEmpty());
 
-                return paymentService.getBalance()
+                return paymentService.getBalance(userDetails.getUsername())
                     .map(balance -> {
                         model.addAttribute("enoughMoney", balance.subtract(cartDto.getTotal()).compareTo(BigDecimal.ZERO) > 0);
                         return "cart";
