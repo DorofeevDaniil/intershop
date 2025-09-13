@@ -8,17 +8,17 @@
 </head>
 
 <body>
-    <a th:href="@{/orders}" style="float:right;">
+    <a sec:authorize="isFullyAuthenticated()" th:href="@{/orders}" style="float:right;">
         <b>ЗАКАЗЫ &cudarrr;</b>
     </a>
-    <a th:href="@{/cart/items}" style="float:right;">
+    <a sec:authorize="isFullyAuthenticated()" th:href="@{/cart/items}" style="float:right;">
         <b>КОРЗИНА &cudarrr;</b>
     </a>
     <a th:href="@{/main/items}" style="float:right;">
         <b>ГЛАВНАЯ &cudarrr;</b>
     </a>
     <div th:fragment="authButtons">
-        <div sec:authorize="isAuthenticated()">
+        <div sec:authorize="isFullyAuthenticated()">
             <span th:text="${#authentication.name}">Username</span>
             <form th:action="@{/logout}" method="post" style="display:inline;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
