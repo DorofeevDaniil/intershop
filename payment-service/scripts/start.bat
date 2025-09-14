@@ -1,6 +1,20 @@
 @echo off
 setlocal
+
+if "%~2"=="" (
+        echo Usage: start.bat KEYCLOAK_HOST KEYCLOAK_PORT
+        echo Example: start.bat localhost 8181
+        exit /b 1
+    )
+
+set "KEYCLOAK_HOST=%~1"
+set "KEYCLOAK_PORT=%~2"
+
 echo Starting application...
+
+set KEYCLOAK_HOST=%KEYCLOAK_HOST%
+set KEYCLOAK_PORT=%KEYCLOAK_PORT%
+
 set JAR_NAME=${JAR_NAME}
 echo Starting %JAR_NAME%...
 

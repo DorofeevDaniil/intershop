@@ -1,8 +1,8 @@
 @echo off
     setlocal
-    if "%~9"=="" (
-        echo Usage: start.bat DB_HOST DB_PORT DB_NAME POSTGRES_USER POSTGRES_PASSWORD REDIS_HOST REDIS_PORT PAYMENT_SERVICE_HOST PAYMENT_SERVICE_PORT
-        echo Example: start.bat localhost 5432 postgres root root 127.0.0.1 6379 localhost 8080
+    if "%~13"=="" (
+        echo Usage: start.bat DB_HOST DB_PORT DB_NAME POSTGRES_USER POSTGRES_PASSWORD REDIS_HOST REDIS_PORT PAYMENT_SERVICE_HOST PAYMENT_SERVICE_PORT KEYCLOAK_HOST KEYCLOAK_PORT KEYCLOAK_CLIENT_ID KEYCLOAK_CLIENT_SECRET
+        echo Example: start.bat localhost 5432 postgres root root 127.0.0.1 6379 localhost 9192 localhost 8181 client-test qtPcKbjQchNdVk0uJjm9tav5cldZbsrN
         exit /b 1
     )
 
@@ -15,6 +15,10 @@
     set "REDIS_PORT=%~7"
     set "PAYMENT_SERVICE_HOST=%~8"
     set "PAYMENT_SERVICE_PORT=%~9"
+    set "KEYCLOAK_HOST=%~10"
+    set "KEYCLOAK_PORT=%~11"
+    set "KEYCLOAK_CLIENT_ID=%~12"
+    set "KEYCLOAK_CLIENT_SECRET=%~13"
 
     echo Starting application...
 
@@ -27,6 +31,10 @@
     set REDIS_PORT=%REDIS_PORT%
     set PAYMENT_SERVICE_HOST=%PAYMENT_SERVICE_HOST%
     set PAYMENT_SERVICE_PORT=%PAYMENT_SERVICE_PORT%
+    set KEYCLOAK_HOST=%KEYCLOAK_HOST%
+    set KEYCLOAK_PORT=%KEYCLOAK_PORT%
+    set KEYCLOAK_CLIENT_ID=%KEYCLOAK_CLIENT_ID%
+    set KEYCLOAK_CLIENT_SECRET=%KEYCLOAK_CLIENT_SECRET%
 
     set JAR_NAME=${JAR_NAME}
 

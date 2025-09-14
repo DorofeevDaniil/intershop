@@ -24,7 +24,10 @@
 Выполнить команду `./build/libs/start.bat start.bat`
 
 > [!WARNING]
-> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/payment-service-v3.0.jar`,
+> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/payment-service-v3.0.jar`, предварительно задав переменные среды
+> 1.  `$env:KEYCLOAK_HOST="<KEYCLOAK_HOST>"`
+> 2.  `$env:KEYCLOAK_PORT="<KEYCLOAK_PORT>"`
+> 
 > Однако остановка будет возможна только последовательным выполнением команд
 > 1. `jps -lv | findstr /i payment-service`
 > 2. `taskkill /PID <PID> /f`
@@ -34,16 +37,25 @@
 
 ### Из исходного кода
 #### Windows
-Выполнить команду `./gradlew :payment-service:bootRun`
+Выполнить команды
 
-#### Unix-подобные системы `./gradlew :payment-service:bootRun`
+    $env:KEYCLOAK_HOST="<KEYCLOAK_HOST>"
+    $env:KEYCLOAK_PORT="<KEYCLOAK_PORT>"
+    ./gradlew :payment-service:bootRun
+
+#### Unix-подобные системы 
+Выполнить команды
+
+    export KEYCLOAK_HOST=<KEYCLOAK_HOST>
+    export KEYCLOAK_PORT=<KEYCLOAK_PORT>
+    ./gradlew :payment-service:bootRun
 
 ### В Intellij IDEA
 Открыть Run/Debug Configurations, добавить в конфигурацию запуска Environment variables с актуальным для запускаемой конфигурации содержимым
-`DB_HOST=<DB_HOST>;DB_PORT=<DB_PORT>;DB_NAME=<DB_NAME>;POSTGRES_USER=<POSTGRES_USER>;POSTGRES_PASSWORD=<POSTGRES_PASSWORD>;REDIS_HOST=<REDIS_HOST>;REDIS_PORT=<REDIS_PORT>;PAYMENT_SERVICE_HOST=<PAYMENT_SERVICE_HOST>;PAYMENT_SERVICE_PORT=<PAYMENT_SERVICE_PORT>`
+`KEYCLOAK_HOST=<KEYCLOAK_HOST>;KEYCLOAK_PORT=<KEYCLOAK_PORT>`
 
 > [!NOTE]
->После запуска любым из вышеописанных способов API будет доступно по адресу http://localhost:8080/payment/<METHOD_PATH>
+>После запуска любым из вышеописанных способов API будет доступно по адресу http://localhost:9192/api/<METHOD_PATH>
 
 ### Тестирование
 Для запуска тестов необходимо выполнить команду `./gradlew test`
