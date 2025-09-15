@@ -1,5 +1,6 @@
 package ru.custom.storefrontapp.unit.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,12 +17,10 @@ import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.dto.OrderDto;
 import ru.custom.storefrontapp.model.Order;
 import ru.custom.storefrontapp.model.OrderItem;
+import ru.custom.storefrontapp.model.User;
 import ru.custom.storefrontapp.repository.OrderItemRepository;
 import ru.custom.storefrontapp.repository.OrderRepository;
-import ru.custom.storefrontapp.service.CartService;
-import ru.custom.storefrontapp.service.ItemService;
-import ru.custom.storefrontapp.service.OrderService;
-import ru.custom.storefrontapp.service.PaymentService;
+import ru.custom.storefrontapp.service.*;
 
 import java.util.List;
 
@@ -45,10 +44,24 @@ class OrderServiceTest extends BaseServiceTest {
     private PaymentService paymentService;
 
     @Mock
+    private UserManagementService userManagementService;
+
+    @Mock
     private ReactiveTransactionManager transactionManager;
 
     @InjectMocks
     private OrderService orderService;
+
+    @BeforeEach
+    void setUp() {
+        User testUser = new User();
+        testUser.setId(TEST_USER_ID);
+        testUser.setPassword(TEST_USER_NAME);
+        testUser.setUsername("user");
+        testUser.setEnabled(true);
+
+        lenient().doReturn(Mono.just(testUser)).when(userManagementService).findUserByName(anyString());
+    }
 
     @Test
     void getOrderById_shouldReturnOrder() {
@@ -74,15 +87,15 @@ class OrderServiceTest extends BaseServiceTest {
 
         doReturn(Flux.fromIterable(List.of(expectedOrderItem))).when(orderItemRepository).findAllByOrderId(anyLong());
         doReturn(Mono.just(populateItemDto())).when(itemService).getItemCardById(anyLong());
-        doReturn(Flux.fromIterable(List.of(expectedOrder))).when(orderRepository).findAll();
+        doReturn(Flux.fromIterable(List.of(expectedOrder))).when(orderRepository).findAllByUserId(TEST_USER_ID);
 
         StepVerifier.create(
-            orderService.getAllOrders()
+            orderService.getAllOrders(TEST_USER_NAME)
         ).assertNext(actualOrderDto ->
             assertEquals(expectedOrderDto, actualOrderDto)
         ).verifyComplete();
 
-        verify(orderRepository, times(1)).findAll();
+        verify(orderRepository, times(1)).findAllByUserId(TEST_USER_ID);
         verify(orderItemRepository, times(1)).findAllByOrderId(TEST_ID);
         verify(itemService, times(1)).getItemCardById(TEST_ID);
     }
@@ -101,14 +114,15 @@ class OrderServiceTest extends BaseServiceTest {
         CartDto cart = new CartDto(List.of(expectedItem), TEST_PRICE);
         PaymentDto expectedPaymentDto = new PaymentDto();
         expectedPaymentDto.setAmount(cart.getTotal().doubleValue());
+        expectedPaymentDto.setUserId(TEST_USER_ID);
 
         doReturn(Mono.just(expectedOrder)).when(orderRepository).save(any(Order.class));
         doReturn(Mono.empty()).when(paymentService).postPayment(any(PaymentDto.class));
-        doReturn(Mono.empty()).when(cartService).cleanCart();
+        doReturn(Mono.empty()).when(cartService).cleanCart(TEST_USER_ID);
         doReturn(Flux.fromIterable(List.of(expectedOrderItem))).when(orderItemRepository).saveAll(anyList());
 
         StepVerifier.create(
-            orderService.createOrder(cart)
+            orderService.createOrder(cart, TEST_USER_NAME)
         ).assertNext(actualId ->
             assertEquals(expectedOrder.getId(), actualId)
         ).verifyComplete();

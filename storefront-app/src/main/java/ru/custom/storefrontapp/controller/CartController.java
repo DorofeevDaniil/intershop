@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import ru.custom.storefrontapp.service.PaymentService;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
 import java.math.BigDecimal;
@@ -19,11 +18,9 @@ import java.math.BigDecimal;
 @RequestMapping("/cart")
 public class CartController {
     private final StoreFrontService storeFrontService;
-    private final PaymentService paymentService;
 
-    public CartController(StoreFrontService storeFrontService, PaymentService paymentService) {
+    public CartController(StoreFrontService storeFrontService) {
         this.storeFrontService = storeFrontService;
-        this.paymentService = paymentService;
     }
 
 
@@ -37,7 +34,7 @@ public class CartController {
                 model.addAttribute("total", cartDto.getTotal());
                 model.addAttribute("empty", cartDto.isEmpty());
 
-                return paymentService.getBalance(userDetails.getUsername())
+                return storeFrontService.getBalance(userDetails.getUsername())
                     .map(balance -> {
                         model.addAttribute("enoughMoney", balance.subtract(cartDto.getTotal()).compareTo(BigDecimal.ZERO) > 0);
                         return "cart";

@@ -25,13 +25,10 @@ public class PaymentService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    public Mono<BigDecimal> getBalance(String username) {
-        return userManagementService.findUserByName(username)
-            .flatMap(user ->
-                paymentApi.apiBalanceUserIdGet(user.getId())
+    public Mono<BigDecimal> getBalance(Long userId) {
+        return paymentApi.apiBalanceUserIdGet(userId)
                     .map(balanceDto -> BigDecimal.valueOf(balanceDto.getBalance() == null ? 0 : balanceDto.getBalance()))
-                    .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO)
-            );
+                    .onErrorReturn(WebClientRequestException.class, BigDecimal.ZERO);
     }
 
     @PreAuthorize("hasRole('USER')")

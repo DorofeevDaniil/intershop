@@ -22,7 +22,7 @@ import java.net.URI;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentServiceTest {
+class PaymentServiceTest extends BaseServiceTest {
     @Mock
     private DefaultApi paymentApi;
     @InjectMocks
@@ -30,13 +30,13 @@ class PaymentServiceTest {
 
     @Test
     void getBalance_shouldReturnBalance() {
-        doReturn(Mono.just(new BalanceDto().balance(100.0))).when(paymentApi).apiBalanceGet();
+        doReturn(Mono.just(new BalanceDto().balance(100.0))).when(paymentApi).apiBalanceUserIdGet(TEST_USER_ID);
 
-        StepVerifier.create(paymentService.getBalance())
+        StepVerifier.create(paymentService.getBalance(TEST_USER_ID))
             .expectNext(BigDecimal.valueOf(100.0))
             .verifyComplete();
 
-        verify(paymentApi, times(1)).apiBalanceGet();
+        verify(paymentApi, times(1)).apiBalanceUserIdGet(anyLong());
     }
 
     @Test
@@ -48,13 +48,13 @@ class PaymentServiceTest {
             new HttpHeaders()
         );
 
-        doReturn(Mono.error(ex)).when(paymentApi).apiBalanceGet();
+        doReturn(Mono.error(ex)).when(paymentApi).apiBalanceUserIdGet(TEST_USER_ID);
 
-        StepVerifier.create(paymentService.getBalance())
+        StepVerifier.create(paymentService.getBalance(TEST_USER_ID))
             .expectNext(BigDecimal.ZERO)
             .verifyComplete();
 
-        verify(paymentApi, times(1)).apiBalanceGet();
+        verify(paymentApi, times(1)).apiBalanceUserIdGet(anyLong());
     }
 
     @Test

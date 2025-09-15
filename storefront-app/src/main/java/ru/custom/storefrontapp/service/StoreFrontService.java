@@ -22,16 +22,18 @@ public class StoreFrontService {
     private final CartService cartService;
     private final SecurityUtils securityUtils;
     private final UserManagementService userManagementService;
+    private final PaymentService paymentService;
 
     public StoreFrontService(
             ItemService itemService,
             CartService cartService,
             SecurityUtils securityUtils,
-            UserManagementService userManagementService) {
+            UserManagementService userManagementService, PaymentService paymentService) {
         this.itemService = itemService;
         this.cartService = cartService;
         this.securityUtils = securityUtils;
         this.userManagementService = userManagementService;
+        this.paymentService = paymentService;
     }
 
     public Mono<ItemDto> getItem(Long id, Authentication auth) {
@@ -60,6 +62,12 @@ public class StoreFrontService {
             .flatMap(user ->
                 cartService.changeQuantity(id, action, user.getId())
             );
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    public Mono<BigDecimal> getBalance(String username) {
+        return userManagementService.findUserByName(username)
+                .flatMap(user -> paymentService.getBalance(user.getId()));
     }
 
     public Mono<PagedResult<List<ItemDto>>> getPage(int page, int pageSize, String sort, String searchText, Authentication auth) {
