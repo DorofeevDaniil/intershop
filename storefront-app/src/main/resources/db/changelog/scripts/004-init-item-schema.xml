@@ -29,7 +29,7 @@
             <column name="count" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="price" type="numeric">
+            <column name="price" type="numeric(19,2)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

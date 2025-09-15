@@ -3,6 +3,8 @@ package ru.custom.storefrontapp.integration.controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockReset;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Mono;
@@ -11,6 +13,7 @@ import ru.custom.storefrontapp.domain.BalanceDto;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
 class CartControllerTest extends BaseControllerTest {
@@ -21,9 +24,10 @@ class CartControllerTest extends BaseControllerTest {
     private DefaultApi paymentApi;
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     void handleShowItems_shouldReturnItemsInCart() {
-        storeFrontService.changeItemQuantity(1L, "PLUS").block();
-        doReturn(Mono.just(new BalanceDto().balance(10000.0))).when(paymentApi).apiBalanceGet();
+        storeFrontService.changeItemQuantity(1L, "PLUS", "user").block();
+        doReturn(Mono.just(new BalanceDto().balance(10000.0))).when(paymentApi).apiBalanceUserIdGet(1L);
 
         webTestClient.get()
                 .uri("/cart/items")
@@ -41,9 +45,10 @@ class CartControllerTest extends BaseControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     void handleShowItems_shouldReturnItemsInCart_shouldDisableButtonWhenNotEnoughMoney() {
-        storeFrontService.changeItemQuantity(1L, "PLUS").block();
-        doReturn(Mono.just(new BalanceDto().balance(10.0))).when(paymentApi).apiBalanceGet();
+        storeFrontService.changeItemQuantity(1L, "PLUS", "user").block();
+        doReturn(Mono.just(new BalanceDto().balance(10.0))).when(paymentApi).apiBalanceUserIdGet(1L);
 
         webTestClient.get()
             .uri("/cart/items")
@@ -61,21 +66,91 @@ class CartControllerTest extends BaseControllerTest {
     }
 
     @Test
+    void handleShowItems_shouldDenyAccess_whenNoRole() {
+        webTestClient.mutateWith(
+                SecurityMockServerConfigurers.mockUser()
+                    .roles("TEST")
+            )
+            .get()
+            .uri("/cart/items")
+            .exchange()
+            .expectStatus().isForbidden()
+            .expectBody(String.class).consumeWith(response ->
+                    assertTrue(response.getResponseBody().contains("Access Denied"))
+            );
+
+    }
+
+    @Test
+    void handleShowItems_shouldRedirectToLogin_whenNotAuthenticated() {
+        webTestClient.get()
+            .uri("/cart/items")
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().valueMatches("Location", ".*/login");
+    }
+
+    @Test
     void handleChangeAmount_shouldReturnBadRequest() {
-        webTestClient.post()
-                .uri("/cart/items/1")
-                    .exchange()
-                    .expectStatus().isBadRequest();
+        webTestClient.mutateWith(
+                SecurityMockServerConfigurers.mockUser()
+                    .roles(TEST_USER_ROLE)
+            ).mutateWith(
+                    SecurityMockServerConfigurers.csrf()
+            )
+            .post()
+            .uri("/cart/items/1")
+            .exchange()
+                .expectStatus().isBadRequest();
     }
 
     @Test
     void handleChangeAmount_shouldAddItem() {
-        webTestClient.post()
+        webTestClient.mutateWith(
+                SecurityMockServerConfigurers.mockUser()
+                    .roles(TEST_USER_ROLE)
+            ).mutateWith(
+                SecurityMockServerConfigurers.csrf()
+            )
+            .post()
             .uri("/cart/items/1")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
             .bodyValue("action=PLUS")
             .exchange()
             .expectStatus().is3xxRedirection()
             .expectHeader().valueEquals("Location", "/cart/items");
+    }
+
+    @Test
+    void handleChangeAmount_shouldDenyAccess_whenNoRole() {
+        webTestClient.mutateWith(
+                SecurityMockServerConfigurers.mockUser()
+                    .roles("TEST")
+            ).mutateWith(
+                    SecurityMockServerConfigurers.csrf()
+            )
+            .post()
+            .uri("/cart/items/1")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .bodyValue("action=PLUS")
+            .exchange()
+            .expectStatus().isForbidden()
+            .expectBody(String.class).consumeWith(response ->
+                    assertTrue(response.getResponseBody().contains("Access Denied"))
+            );
+    }
+
+    @Test
+    void handleChangeAmount_shouldRedirectToLogin_whenNotAuthenticated() {
+        webTestClient.mutateWith(
+                SecurityMockServerConfigurers.csrf()
+            )
+            .post()
+            .uri("/cart/items/1")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .bodyValue("action=PLUS")
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().valueMatches("Location", ".*/login");
     }
 }
