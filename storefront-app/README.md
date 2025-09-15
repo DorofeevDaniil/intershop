@@ -94,7 +94,11 @@
 `DB_HOST=<DB_HOST>;DB_PORT=<DB_PORT>;DB_NAME=<DB_NAME>;POSTGRES_USER=<POSTGRES_USER>;POSTGRES_PASSWORD=<POSTGRES_PASSWORD>;REDIS_HOST=<REDIS_HOST>;REDIS_PORT=<REDIS_PORT>;PAYMENT_SERVICE_HOST=<PAYMENT_SERVICE_HOST>;PAYMENT_SERVICE_PORT=<PAYMENT_SERVICE_PORT>;KEYCLOAK_HOST=<KEYCLOAK_HOST>;KEYCLOAK_PORT=<KEYCLOAK_PORT>;KEYCLOAK_CLIENT_ID=<KEYCLOAK_CLIENT_ID>;KEYCLOAK_CLIENT_SECRET=<KEYCLOAK_CLIENT_SECRET>`
 
 > [!NOTE]
->После запуска любым из вышеописанных способов приложение будет доступно по адресу http://localhost:9191/intershop
+> После запуска любым из вышеописанных способов приложение будет доступно по адресу http://localhost:9191/intershop
+> 
+> Дефолтный пользователь user/user
+> 
+> Дефолтный админ admin/admin
 
 ### Тестирование
 Для запуска тестов необходимо выполнить команду `./gradlew test`
