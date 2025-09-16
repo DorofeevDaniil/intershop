@@ -12,7 +12,11 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.custom.storefrontapp.initializer.ImageStartupInitializer;
 import ru.custom.storefrontapp.model.Item;
+import ru.custom.storefrontapp.model.Role;
+import ru.custom.storefrontapp.model.User;
+import ru.custom.storefrontapp.model.UserRole;
 import ru.custom.storefrontapp.service.ItemService;
+import ru.custom.storefrontapp.service.UserManagementService;
 
 import java.io.IOException;
 
@@ -22,10 +26,16 @@ import static org.mockito.Mockito.*;
 class ImageStartupInitializerTest {
     @Mock
     private ItemService itemService;
-
+    @Mock
+    private UserManagementService userManagementService;
     @Spy
     @InjectMocks
     private ImageStartupInitializer initializer;
+
+    private static final String TEST_USER_NAME = "admin";
+    private static final String TEST_ROLE_NAME = "TEST_ROLE";
+    private static final Long TEST_ROLE_ID = 1L;
+    private static final Long TEST_USER_ID = 1L;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -36,7 +46,7 @@ class ImageStartupInitializerTest {
     }
 
     @Test
-    void shouldSaveItemsWhenDatabaseIsEmpty() {
+    void runItemInitialization_shouldSaveItemsWhenDatabaseIsEmpty() {
         // given
         when(itemService.getTotalCount()).thenReturn(Mono.just(0L));
         when(itemService.saveToDb(any(Item.class))).thenReturn(Mono.just(new Item()));
@@ -50,7 +60,7 @@ class ImageStartupInitializerTest {
     }
 
     @Test
-    void shouldDoNothingWhenDatabaseIsNotEmpty() {
+    void runItemInitialization_shouldDoNothingWhenDatabaseIsNotEmpty() {
         // given
         when(itemService.getTotalCount()).thenReturn(Mono.just(10L));
 
@@ -60,5 +70,64 @@ class ImageStartupInitializerTest {
 
         // then
         verify(itemService, never()).saveToDb(any(Item.class));
+    }
+
+    @Test
+    void populateRoleModel_shouldSaveItemsWhenDatabaseIsEmpty() {
+        // given
+        when(userManagementService.findUserByName(anyString())).thenReturn(Mono.empty());
+        when(userManagementService.saveUser(anyString())).thenReturn(Mono.just(getUser()));
+        when(userManagementService.findRoleByName(anyString())).thenReturn(Mono.empty());
+        when(userManagementService.saveRole(anyString())).thenReturn(Mono.just(getRole()));
+        when(userManagementService.findUserRoleByIds(anyLong(), anyLong())).thenReturn(Mono.empty());
+        when(userManagementService.saveUserRole(anyLong(), anyLong())).thenReturn(Mono.just(getUserRole()));
+
+        // when
+        StepVerifier.create(initializer.populateRoleModel())
+                .verifyComplete();
+
+        // then
+        verify(userManagementService, times(2)).saveUser(anyString());
+        verify(userManagementService, times(2)).saveRole(anyString());
+        verify(userManagementService, times(2)).saveUserRole(anyLong(), anyLong());
+    }
+
+    @Test
+    void populateRoleModel_shouldDoNothingWhenDatabaseIsNotEmpty() {
+        // given
+        when(userManagementService.findUserByName(anyString())).thenReturn(Mono.just(getUser()));
+        when(userManagementService.findRoleByName(anyString())).thenReturn(Mono.just(getRole()));
+        when(userManagementService.findUserRoleByIds(anyLong(), anyLong())).thenReturn(Mono.just(getUserRole()));
+
+        // when
+        StepVerifier.create(initializer.populateRoleModel())
+                .verifyComplete();
+
+        // then
+        verify(userManagementService, times(0)).saveUser(anyString());
+        verify(userManagementService, times(0)).saveRole(anyString());
+        verify(userManagementService, times(0)).saveUserRole(anyLong(), anyLong());
+    }
+
+    private UserRole getUserRole() {
+        UserRole userRole = new UserRole();
+        userRole.setUserId(1L);
+        userRole.setRoleId(1L);
+
+        return userRole;
+    }
+
+    private Role getRole() {
+        Role role = new Role();
+        role.setId(1L);
+
+        return role;
+    }
+
+    private User getUser() {
+        User user = new User();
+        user.setId(1L);
+
+        return user;
     }
 }

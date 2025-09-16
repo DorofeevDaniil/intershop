@@ -40,26 +40,26 @@ class UserDetailsServiceTest extends BaseServiceTest {
     @Test
     void findByUsername_shouldReturnUserDetailsWithRoles() {
         User user = new User();
-        user.setId(1L);
-        user.setUsername("testUser");
+        user.setId(TEST_USER_ID);
+        user.setUsername(TEST_USER_NAME);
         user.setPassword("secret");
         user.setEnabled(true);
 
         UserRole userRole = new UserRole();
-        userRole.setUserId(1L);
+        userRole.setUserId(TEST_USER_ID);
         userRole.setRoleId(10L);
 
         Role role = new Role();
         role.setId(10L);
         role.setName("ADMIN");
 
-        doReturn(Mono.just(user)).when(userRepository).findByUsername("testUser");
-        doReturn(Flux.fromIterable(List.of(userRole))).when(userRoleRepository).findByUserId(1L);
+        doReturn(Mono.just(user)).when(userRepository).findByUsername(TEST_USER_NAME);
+        doReturn(Flux.fromIterable(List.of(userRole))).when(userRoleRepository).findByUserId(TEST_USER_ID);
         doReturn(Mono.just(role)).when(roleRepository).findById(10L);
 
-        StepVerifier.create(userDetailsService.findByUsername("testUser"))
+        StepVerifier.create(userDetailsService.findByUsername(TEST_USER_NAME))
                 .assertNext(userDetails -> {
-                    assertThat(userDetails.getUsername()).isEqualTo("testUser");
+                    assertThat(userDetails.getUsername()).isEqualTo(TEST_USER_NAME);
                     assertThat(userDetails.getPassword()).isEqualTo("secret");
                     assertThat(userDetails.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
