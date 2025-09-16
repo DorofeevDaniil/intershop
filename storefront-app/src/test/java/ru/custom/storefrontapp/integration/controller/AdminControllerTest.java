@@ -90,9 +90,7 @@ class AdminControllerTest extends BaseControllerTest {
 
     @Test
     void handleAddItem_shouldUpdateItem() {
-        webTestClient.mutateWith(
-                SecurityMockServerConfigurers.csrf()
-            )
+        webTestClient
             .mutateWith(
                 SecurityMockServerConfigurers.mockUser()
                     .roles(TEST_ADMIN_ROLE)
@@ -107,9 +105,7 @@ class AdminControllerTest extends BaseControllerTest {
 
     @Test
     void handleAddItem_shouldRedirectToLogin_whenNotAuthenticated() {
-        webTestClient.mutateWith(
-                    SecurityMockServerConfigurers.csrf()
-                )
+        webTestClient
                 .post()
                 .uri("/admin/add")
                 .exchange()
@@ -118,23 +114,10 @@ class AdminControllerTest extends BaseControllerTest {
     }
 
     @Test
-    void handleAddItem_shouldDenyAccess_whenNoCsrf() {
-        webTestClient.post()
-                .uri("/admin/add")
-                .exchange()
-                .expectStatus().isForbidden()
-                .expectBody(String.class).consumeWith(response ->
-                        assertTrue(response.getResponseBody().contains("Access Denied"))
-                );
-    }
-
-    @Test
     void handleAddItem_shouldDenyAccess_whenNoRole() {
         webTestClient.mutateWith(
                     SecurityMockServerConfigurers.mockUser()
                         .roles(TEST_USER_ROLE)
-                ).mutateWith(
-                    SecurityMockServerConfigurers.csrf()
                 )
                 .post()
                 .uri("/admin/add")

@@ -1,11 +1,9 @@
 package ru.custom.storefrontapp.controller;
 
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import ru.custom.storefrontapp.dto.ItemDto;
 import ru.custom.storefrontapp.service.StoreFrontService;
@@ -56,10 +54,5 @@ public class AdminController {
                 return storeFrontService.createItem(item, image);
             })
             .thenReturn("redirect:/admin/add");
-    }
-
-    @ModelAttribute("_csrf")
-    public Mono<CsrfToken> csrfToken(ServerWebExchange exchange) {
-        return exchange.getAttribute(CsrfToken.class.getName());
     }
 }

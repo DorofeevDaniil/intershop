@@ -21,6 +21,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/admin/**").hasRole("ADMIN")
                 .pathMatchers("/cart/**", "/orders/**", "/buy").authenticated()
@@ -35,8 +36,8 @@ public class SecurityConfig {
                 .authenticationSuccessHandler((webFilterExchange, authentication) -> {
                     var exchange = webFilterExchange.getExchange();
                     exchange.getResponse().setStatusCode(HttpStatus.FOUND);
-                    exchange.getResponse().getHeaders().setLocation(
-                        URI.create(exchange.getRequest().getPath().contextPath().value() + "/main/items"));
+                   exchange.getResponse().getHeaders().setLocation(
+                        URI.create(exchange.getRequest().getPath().contextPath().value()));
                     return exchange.getResponse().setComplete();
                 })
             )

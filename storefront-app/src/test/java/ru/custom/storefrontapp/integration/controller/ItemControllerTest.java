@@ -26,8 +26,6 @@ class ItemControllerTest extends BaseControllerTest {
         webTestClient.mutateWith(
                     SecurityMockServerConfigurers.mockUser()
                         .roles(TEST_USER_ROLE)
-                ).mutateWith(
-                    SecurityMockServerConfigurers.csrf()
                 )
                 .post()
                 .uri("/items/1")
@@ -40,8 +38,6 @@ class ItemControllerTest extends BaseControllerTest {
         webTestClient.mutateWith(
                 SecurityMockServerConfigurers.mockUser()
                     .roles(TEST_USER_ROLE)
-            ).mutateWith(
-                SecurityMockServerConfigurers.csrf()
             )
             .post()
             .uri("/items/1")
@@ -57,8 +53,6 @@ class ItemControllerTest extends BaseControllerTest {
         webTestClient.mutateWith(
                         SecurityMockServerConfigurers.mockUser()
                                 .roles("TEST")
-                ).mutateWith(
-                        SecurityMockServerConfigurers.csrf()
                 )
                 .post()
                 .uri("/items/1")
@@ -73,9 +67,7 @@ class ItemControllerTest extends BaseControllerTest {
 
     @Test
     void handleChangeAmount_shouldRedirectToLogin_whenNotAuthenticated() {
-        webTestClient.mutateWith(
-                        SecurityMockServerConfigurers.csrf()
-                )
+        webTestClient
                 .post()
                 .uri("/items/1")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)

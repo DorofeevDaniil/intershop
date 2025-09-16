@@ -45,9 +45,7 @@ class OrderControllerTest extends BaseControllerTest {
 
     @Test
     void handleShowOrders_shouldRedirectToLogin_whenNotAuthenticated() {
-        webTestClient.mutateWith(
-                        SecurityMockServerConfigurers.csrf()
-                )
+        webTestClient
                 .get()
                 .uri("/orders")
                 .exchange()
@@ -93,9 +91,7 @@ class OrderControllerTest extends BaseControllerTest {
 
     @Test
     void handleGetOrder_shouldRedirectToLogin_whenNotAuthenticated() {
-        webTestClient.mutateWith(
-                        SecurityMockServerConfigurers.csrf()
-                )
+        webTestClient
                 .get()
                 .uri("/orders/1")
                 .exchange()

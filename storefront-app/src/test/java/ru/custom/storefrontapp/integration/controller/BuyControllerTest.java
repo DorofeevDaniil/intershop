@@ -30,9 +30,7 @@ class BuyControllerTest extends BaseControllerTest {
         storeFrontService.changeItemQuantity(1L, "PLUS", "user").block();
         doReturn(Mono.empty()).when(paymentApi).apiPaymentPost(any(PaymentDto.class));
 
-        webTestClient.mutateWith(
-                SecurityMockServerConfigurers.csrf()
-            )
+        webTestClient
             .post()
             .uri("/buy")
             .exchange()
@@ -42,9 +40,7 @@ class BuyControllerTest extends BaseControllerTest {
 
     @Test
     void handleBuyItems_shouldRedirectToLogin_whenNotAuthenticated() {
-        webTestClient.mutateWith(
-                SecurityMockServerConfigurers.csrf()
-            )
+        webTestClient
             .post()
             .uri("/buy")
             .exchange()
@@ -57,8 +53,6 @@ class BuyControllerTest extends BaseControllerTest {
         webTestClient.mutateWith(
                 SecurityMockServerConfigurers.mockUser()
                     .roles("TEST")
-            ).mutateWith(
-                    SecurityMockServerConfigurers.csrf()
             )
             .post()
             .uri("/buy")
@@ -79,9 +73,7 @@ class BuyControllerTest extends BaseControllerTest {
 
         doReturn(Mono.error(ex)).when(paymentApi).apiPaymentPost(any(PaymentDto.class));
 
-        webTestClient.mutateWith(
-                SecurityMockServerConfigurers.csrf()
-            )
+        webTestClient
             .post()
             .uri("/buy")
             .exchange()

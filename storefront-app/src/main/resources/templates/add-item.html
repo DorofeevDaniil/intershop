@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <title>Витрина товаров</title>
@@ -10,6 +11,12 @@
 <a th:href="@{/main/items}" style="float:right;">
   <b>НА ГЛАВНУЮ &cudarrr;</b>
 </a>
+<div sec:authorize="isFullyAuthenticated()">
+  <span th:text="${#authentication.name}">Username</span>
+  <form th:action="@{/logout}" method="post" style="display:inline;">
+    <button type="submit">Выйти</button>
+  </form>
+</div>
 <form method="POST" th:action="@{/admin/add}" enctype="multipart/form-data">
   <table style="width:50%;margin-left:auto;margin-right:auto;">
     <tr>
