@@ -18,8 +18,6 @@ import ru.custom.storefrontapp.model.UserRole;
 import ru.custom.storefrontapp.service.ItemService;
 import ru.custom.storefrontapp.service.UserManagementService;
 
-import java.io.IOException;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,13 +30,8 @@ class ImageStartupInitializerTest {
     @InjectMocks
     private ImageStartupInitializer initializer;
 
-    private static final String TEST_USER_NAME = "admin";
-    private static final String TEST_ROLE_NAME = "TEST_ROLE";
-    private static final Long TEST_ROLE_ID = 1L;
-    private static final Long TEST_USER_ID = 1L;
-
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         ReflectionTestUtils.setField(initializer, "relativePath", "uploads/images");
 
         lenient().doReturn("mock-image.jpg").when(initializer).saveImage(anyString());

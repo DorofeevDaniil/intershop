@@ -33,9 +33,6 @@ public class UserManagementServiceTest extends BaseServiceTest {
     @InjectMocks
     private UserManagementService userManagementService;
 
-    private static final String TEST_ROLE_NAME = "USER";
-    private static final Long TEST_ROLE_ID = 1L;
-
     @Test
     public void registerUser_shouldRegisterUser() {
         doReturn(Mono.just(getRole())).when(roleRepository).findByName(TEST_ROLE_NAME);

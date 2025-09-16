@@ -38,6 +38,8 @@ abstract class BaseServiceTest {
     protected static final Integer TEST_COUNT = 1;
     protected static final Long TEST_USER_ID = 1L;
     protected static final String TEST_USER_NAME = "user";
+    protected static final String TEST_ROLE_NAME = "USER";
+    protected static final Long TEST_ROLE_ID = 1L;
 
     protected Item populateItemNoId() {
         Item item = new Item();

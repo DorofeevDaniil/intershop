@@ -13,10 +13,10 @@ import ru.custom.storefrontapp.repository.UserRoleRepository;
 
 @Service
 public class UserManagementService {
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private UserRoleRepository userRoleRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserManagementService(
         UserRepository userRepository,

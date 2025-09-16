@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 import ru.custom.storefrontapp.api.DefaultApi;
 
 import ru.custom.storefrontapp.domain.PaymentDto;
-import ru.custom.storefrontapp.service.OrderService;
 import ru.custom.storefrontapp.service.StoreFrontService;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,8 +19,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 class BuyControllerTest extends BaseControllerTest {
-    @Autowired
-    private OrderService orderService;
     @Autowired
     private StoreFrontService storeFrontService;
     @MockitoBean(reset = MockReset.BEFORE)

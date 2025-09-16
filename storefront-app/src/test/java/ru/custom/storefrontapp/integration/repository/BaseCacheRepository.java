@@ -42,8 +42,6 @@ abstract class BaseCacheRepository {
     protected static final BigDecimal TEST_PRICE = BigDecimal.valueOf(100);
     protected static final String TEST_IMG_PATH = "/test/path.png";
     protected static final Long TEST_USER_ID = 1L;
-    protected static final String TEST_USER_NAME = "user";
-
     protected static final String TEST_FIRST_ID = "1";
     protected static final String TEST_FIRST_COUNT = "2";
     protected static final String TEST_SECOND_ID = "2";

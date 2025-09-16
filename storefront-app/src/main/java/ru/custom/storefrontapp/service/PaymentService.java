@@ -17,11 +17,9 @@ import java.time.Duration;
 @Slf4j
 public class PaymentService {
     private final DefaultApi paymentApi;
-    private final UserManagementService userManagementService;
 
-    public PaymentService(DefaultApi paymentApi, UserManagementService userManagementService) {
+    public PaymentService(DefaultApi paymentApi) {
         this.paymentApi = paymentApi;
-        this.userManagementService = userManagementService;
     }
 
     @PreAuthorize("hasRole('USER')")
