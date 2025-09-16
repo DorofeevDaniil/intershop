@@ -1,5 +1,5 @@
 # Приложение storefront-app
-## Версия: v3.0
+## Версия: v4.0
 Модуль, разработанный в рамках проектной рабты представляет из себя Витрину интернет-магазина.
 Приложение предоставляет возможность просмотра товаров, формирования корзины, оформления заказ, а также загрузки новых товаров из условного интерфейса администратора.
 
@@ -14,17 +14,17 @@
 ## Запуск
 ### Unix-подобные системы
 #### Запуск
-Выполнить команду `./build/libs/storefront-app-v3.0.jar start`
+Выполнить команду `./build/libs/storefront-app-v4.0.jar start`
 
 #### Остановка
-Выполнить команду `./build/libs/storefront-app-v3.0.jar stop`
+Выполнить команду `./build/libs/storefront-app-v4.0.jar stop`
 
 ### Windows
 #### Запуск
 Выполнить команду `./build/libs/start.bat start.bat <DB_HOST> <DB_PORT> <DB_NAME> <POSTGRES_USER> <POSTGRES_PASSWORD> <REDIS_HOST> <REDIS_PORT> <PAYMENT_SERVICE_HOST> <PAYMENT_SERVICE_PORT> <KEYCLOAK_HOST> <KEYCLOAK_PORT> <KEYCLOAK_CLIENT_ID> <KEYCLOAK_CLIENT_SECRET>`
 
 > [!WARNING]
-> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/storefront-app-v3.0.jar`, предварительно задав переменные среды
+> Можно также запустить напрямую исполняемый jar-файл командой `./build/libs/storefront-app-v4.0.jar`, предварительно задав переменные среды
 > 1.  `$env:DB_HOST="<DB_HOST>"`
 > 2.  `$env:DB_PORT="<DB_PORT>"`
 > 3.  `$env:DB_NAME="<DB_NAME>"`
