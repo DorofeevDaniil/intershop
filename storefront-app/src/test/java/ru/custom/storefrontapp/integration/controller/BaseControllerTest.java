@@ -14,7 +14,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.custom.storefrontapp.configuration.EmbeddedRedisConfiguration;
 import ru.custom.storefrontapp.configuration.NoOAuth2TestConfig;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 @ActiveProfiles({"test", "redis-test"})
@@ -44,18 +43,7 @@ abstract class BaseControllerTest {
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("app.upload-dir", () -> tempDir.toString());
-        int redisPort = findAvailableTcpPort();
-        System.setProperty("spring.data.redis.port", String.valueOf(redisPort));
         registry.add("spring.data.redis.host", () -> EmbeddedRedisConfiguration.redisContainer.getHost());
         registry.add("spring.data.redis.port", () -> EmbeddedRedisConfiguration.redisContainer.getMappedPort(6379));
-    }
-
-    private static int findAvailableTcpPort() {
-        try (var socket = new java.net.ServerSocket(0)) {
-            socket.setReuseAddress(true);
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not find available TCP port", e);
-        }
     }
 }
