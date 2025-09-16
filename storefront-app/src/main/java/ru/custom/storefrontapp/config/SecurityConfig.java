@@ -36,8 +36,15 @@ public class SecurityConfig {
                 .authenticationSuccessHandler((webFilterExchange, authentication) -> {
                     var exchange = webFilterExchange.getExchange();
                     exchange.getResponse().setStatusCode(HttpStatus.FOUND);
-                   exchange.getResponse().getHeaders().setLocation(
-                        URI.create(exchange.getRequest().getPath().contextPath().value()));
+                    String redirectUrl = "/main/items";
+
+                    if (authentication.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                        redirectUrl = "/admin";
+                    }
+
+                    exchange.getResponse().getHeaders().setLocation(
+                        URI.create(exchange.getRequest().getPath().contextPath().value() + redirectUrl));
                     return exchange.getResponse().setComplete();
                 })
             )
