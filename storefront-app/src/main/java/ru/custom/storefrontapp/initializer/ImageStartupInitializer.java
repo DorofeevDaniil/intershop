@@ -100,21 +100,18 @@ public class ImageStartupInitializer {
             });
     }
 
-    private Mono<Void> populateRoleModel() {
+    public Mono<Void> populateRoleModel() {
         return Flux.fromIterable(defaultRoleModel.entrySet())
             .flatMap(modelSet ->
                 userManagementService.findUserByName(modelSet.getKey())
-                    .switchIfEmpty(userManagementService.saveUser(modelSet.getKey()))
+                        .switchIfEmpty(Mono.defer(() -> userManagementService.saveUser(modelSet.getKey())))
                     .flatMap(user ->
                         userManagementService.findRoleByName(modelSet.getValue())
-                            .switchIfEmpty(userManagementService.saveRole(modelSet.getValue()))
+                            .switchIfEmpty(Mono.defer(() -> userManagementService.saveRole(modelSet.getValue())))
                             .flatMap(role ->
                                 userManagementService.findUserRoleByIds(user.getId(), role.getId())
-                                        .switchIfEmpty(userManagementService.saveUserRole(user.getId(), role.getId()))
+                                        .switchIfEmpty(Mono.defer(() -> userManagementService.saveUserRole(user.getId(), role.getId())))
                             )
-                    )
-                    .then(
-
                     )
             )
             .then();
