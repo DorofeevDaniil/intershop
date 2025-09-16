@@ -1,10 +1,8 @@
 package ru.custom.storefrontapp.unit.service;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -21,7 +19,6 @@ import java.net.URI;
 
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class PaymentServiceTest extends BaseServiceTest {
     @Mock
     private DefaultApi paymentApi;

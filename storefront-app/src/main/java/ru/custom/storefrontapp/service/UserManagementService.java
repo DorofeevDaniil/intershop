@@ -30,20 +30,12 @@ public class UserManagementService {
     }
 
     public Mono<Void> registerUser(RegisterRequest registerRequest) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setEnabled(true);
-
-        return userRepository.save(user)
+        return saveUser(registerRequest.getUsername(), registerRequest.getPassword())
             .flatMap(savedUser ->
-                roleRepository.findByName("USER")
-                    .flatMap(role -> {
-                        UserRole userRole = new UserRole();
-                        userRole.setUserId(savedUser.getId());
-                        userRole.setRoleId(role.getId());
-                        return userRoleRepository.save(userRole).thenReturn(savedUser);
-                    })
+                findRoleByName("USER")
+                    .flatMap(role ->
+                            saveUserRole(savedUser.getId(), role.getId())
+                                    .thenReturn(savedUser))
             )
             .then();
     }
@@ -59,10 +51,10 @@ public class UserManagementService {
         return roleRepository.findByName(roleName);
     }
 
-    public Mono<User> saveUser(String username) {
+    public Mono<User> saveUser(String username, String password) {
         User user = new User();
         user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(username));
+        user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
 
         return userRepository.save(user);

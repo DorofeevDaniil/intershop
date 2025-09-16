@@ -1,8 +1,8 @@
 INSERT INTO roles (name) VALUES('USER');
 INSERT INTO roles (name) VALUES('ADMIN');
 
-INSERT INTO users (username, password, enabled) VALUES('user', '$2a$10$I.tTxrGb6GcD5SvZEAxl.OXTXBVamr.N7jJ30BjhEnMYtCoMlopym', true);
-INSERT INTO users (username, password, enabled) VALUES('admin', '$2a$10$5rwSSZoxpQ.WKPA/vpge0efs2pjlb.Zo8ZTesozlIaIpYAT3.en1G', true);
+INSERT INTO users (username, password, enabled) VALUES('user', 'user', true);
+INSERT INTO users (username, password, enabled) VALUES('admin', 'admin', true);
 
 INSERT INTO user_role (user_id, role_id) VALUES(1, 1);
 INSERT INTO user_role (user_id, role_id) VALUES(2, 2);

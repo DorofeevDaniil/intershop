@@ -104,7 +104,7 @@ public class ImageStartupInitializer {
         return Flux.fromIterable(defaultRoleModel.entrySet())
             .flatMap(modelSet ->
                 userManagementService.findUserByName(modelSet.getKey())
-                        .switchIfEmpty(Mono.defer(() -> userManagementService.saveUser(modelSet.getKey())))
+                        .switchIfEmpty(Mono.defer(() -> userManagementService.saveUser(modelSet.getKey(), modelSet.getKey())))
                     .flatMap(user ->
                         userManagementService.findRoleByName(modelSet.getValue())
                             .switchIfEmpty(Mono.defer(() -> userManagementService.saveRole(modelSet.getValue())))

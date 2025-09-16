@@ -1,5 +1,7 @@
 package ru.custom.storefrontapp.unit.service;
 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.multipart.FilePart;
@@ -15,6 +17,7 @@ import java.nio.file.Path;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 abstract class BaseServiceTest {
     protected static final Long TEST_ID = 1L;
     protected static final String TEST_TITLE = "test title";

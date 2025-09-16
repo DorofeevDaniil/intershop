@@ -76,7 +76,7 @@ class ImageStartupInitializerTest {
     void populateRoleModel_shouldSaveItemsWhenDatabaseIsEmpty() {
         // given
         when(userManagementService.findUserByName(anyString())).thenReturn(Mono.empty());
-        when(userManagementService.saveUser(anyString())).thenReturn(Mono.just(getUser()));
+        when(userManagementService.saveUser(anyString(), anyString())).thenReturn(Mono.just(getUser()));
         when(userManagementService.findRoleByName(anyString())).thenReturn(Mono.empty());
         when(userManagementService.saveRole(anyString())).thenReturn(Mono.just(getRole()));
         when(userManagementService.findUserRoleByIds(anyLong(), anyLong())).thenReturn(Mono.empty());
@@ -87,7 +87,7 @@ class ImageStartupInitializerTest {
                 .verifyComplete();
 
         // then
-        verify(userManagementService, times(2)).saveUser(anyString());
+        verify(userManagementService, times(2)).saveUser(anyString(), anyString());
         verify(userManagementService, times(2)).saveRole(anyString());
         verify(userManagementService, times(2)).saveUserRole(anyLong(), anyLong());
     }
@@ -104,7 +104,7 @@ class ImageStartupInitializerTest {
                 .verifyComplete();
 
         // then
-        verify(userManagementService, times(0)).saveUser(anyString());
+        verify(userManagementService, times(0)).saveUser(anyString(), anyString());
         verify(userManagementService, times(0)).saveRole(anyString());
         verify(userManagementService, times(0)).saveUserRole(anyLong(), anyLong());
     }
