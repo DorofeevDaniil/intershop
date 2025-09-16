@@ -55,3 +55,6 @@ components:
           type: number
           format: double
           example: 150.00
+        userId:
+          type: integer
+          format: int64
