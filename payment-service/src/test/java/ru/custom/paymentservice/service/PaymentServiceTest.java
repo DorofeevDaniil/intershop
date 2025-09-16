@@ -32,6 +32,7 @@ class PaymentServiceTest {
     void processPayment_shouldProcess() {
         PaymentDto payment = new PaymentDto();
         payment.setAmount(100.0);
+        payment.setUserId(1L);
 
         StepVerifier.create(paymentService.processPayment(Mono.just(payment)))
             .assertNext(actualResult -> assertEquals(true, actualResult))
@@ -42,6 +43,7 @@ class PaymentServiceTest {
     void processPayment_shouldCancelPayment() {
         PaymentDto payment = new PaymentDto();
         payment.setAmount(1000000.0);
+        payment.setUserId(1L);
 
         StepVerifier.create(paymentService.processPayment(Mono.just(payment)))
             .assertNext(actualResult -> assertEquals(false, actualResult))
